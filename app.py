@@ -802,11 +802,10 @@ with tabs[1]:
             font=dict(color="#e2e8f0")
         )
         st.plotly_chart(fig_gauge, use_container_width=True)
-        st.markdown("---")
 
     with col2:
         st.metric("Leakage Amount", f"₹ {format_indian_currency(leakage)}")
-
+    st.markdown("---")
     # ✅ TABLE WITH REGION
     st.subheader("Audit Flags")
 
