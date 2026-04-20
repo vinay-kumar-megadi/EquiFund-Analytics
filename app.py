@@ -699,6 +699,8 @@ with tabs[0]:
     spacer(20)
 
     underfunded = equity[equity["EquityVariance"] < 0].shape[0]
+    st.markdown("---")
+    st.subheader("Executive Summary & Key Insights")
 
     st.markdown(f"""
     <div class="custom-alert alert-medium">
@@ -817,6 +819,8 @@ with tabs[1]:
     high_risk_count = high_risk_df.shape[0]
 
     st.dataframe(high_risk_df)
+    st.markdown("---")
+    st.subheader("Audit Findings & Risk Analysis")
 
     st.markdown(f"""
     <div class="custom-alert alert-high">
@@ -972,6 +976,8 @@ with tabs[2]:
     )
 
     st.plotly_chart(fig_drill, use_container_width=True)
+    st.markdown("---")
+    st.subheader("Equity Analysis & Distribution Insights")
 
     st.markdown(f"""
     <div class="custom-alert alert-low">
@@ -1042,6 +1048,8 @@ with tabs[4]:
     )
 
     st.plotly_chart(fig_trend, use_container_width=True)
+    st.markdown("---")
+    st.subheader("Trend Analysis & Performance Insights")
 
     st.markdown("""
     <div class="custom-alert alert-medium">
@@ -1105,6 +1113,8 @@ with tabs[5]:
     leakage_r = total_alloc_r - total_spent_r
 
     st.markdown("---")
+    st.subheader("Regional Performance Analysis & Insights")
+
 
     st.markdown(f"""
     <div class="custom-alert alert-medium">
