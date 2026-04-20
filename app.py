@@ -418,7 +418,7 @@ def preprocess_data(df_alloc, df_util, df_regions, df_schemes, df_audit):
     
 def get_ai_insights(summary):
 
-    API_KEY = Groq_API_key   # your Groq key
+    API_KEY = os.getenv("GROQ_API_KEY")   # your Groq key
 
     variation = random.randint(1, 100000)
 
