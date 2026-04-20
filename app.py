@@ -25,6 +25,7 @@ import plotly.graph_objects as go
 import json
 import requests
 import random
+import os
 
 def spacer(h=15):
     st.markdown(f"<div style='margin-top:{h}px'></div>", unsafe_allow_html=True)
