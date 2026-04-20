@@ -1,2 +1,3 @@
 # EquiFund-Analytics
-Welfare Distribution and Efficiency Tracking
+Welfare Distribution and Efficiency Tracking.
+
