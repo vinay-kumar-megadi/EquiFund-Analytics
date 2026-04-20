@@ -1114,4 +1114,5 @@ with tabs[5]:
     👉 Regions with lower utilization may indicate inefficiencies or delays in fund deployment.
     </div>
     """, unsafe_allow_html=True)
+spacer(20)
 st.warning("Disclaimer: This Streamlit app may occasionally produce inaccurate or incomplete results and should not be solely relied upon for critical decisions.")
