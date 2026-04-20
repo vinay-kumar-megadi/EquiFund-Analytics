@@ -627,6 +627,7 @@ with tabs[0]:
         """, unsafe_allow_html=True)
     
     spacer(20)
+    st.markdown("---")
 
     # ✅ AREA CHART
     st.subheader("Total Allocated vs Utilized")
@@ -663,6 +664,7 @@ with tabs[0]:
     )
 
     st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
     spacer(20)
 
@@ -772,13 +774,16 @@ with tabs[1]:
     bottom["Leakage"] = bottom["Leakage"].apply(
         lambda x: "₹ " + format_indian_currency(x)
     )
+    st.markdown("---")
 
     # ✅ DISPLAY CLEAN TABLE
     st.markdown("### 🔥 Top Leakage Regions")
     st.dataframe(top[["RegionName", "Leakage"]])
+    st.markdown("---")
 
     st.markdown("### 🟢 Best Performing Regions")
     st.dataframe(bottom[["RegionName", "Leakage"]])
+    st.markdown("---")
 
     # ✅ GAUGE + AMOUNT
     st.subheader("Leakage Overview")
@@ -797,6 +802,7 @@ with tabs[1]:
             font=dict(color="#e2e8f0")
         )
         st.plotly_chart(fig_gauge, use_container_width=True)
+        st.markdown("---")
 
     with col2:
         st.metric("Leakage Amount", f"₹ {format_indian_currency(leakage)}")
