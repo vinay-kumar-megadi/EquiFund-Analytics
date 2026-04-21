@@ -660,7 +660,8 @@ with tabs[0]:
     )
 
     fig.update_traces(
-        hovertemplate="Date: %{x}<br>Amount: ₹ %{y:,.0f}<extra></extra>"
+        customdata=time_df[["Allocated_fmt", "Spent_fmt"]],
+        hovertemplate="Date: %{x}<br>Amount: %{customdata[0]}<extra></extra>"
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -1043,8 +1044,9 @@ with tabs[4]:
     )
 
     fig_trend.update_traces(
-        hovertemplate="Month: %{x}<br>Amount: ₹ %{y:,.0f}<extra></extra>"
-)
+        customdata=trend[["Allocated_fmt", "Spent_fmt"]],
+        hovertemplate="Month: %{x}<br>Amount: %{customdata[0]}<extra></extra>"
+    )
 
     fig_trend.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
