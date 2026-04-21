@@ -746,13 +746,15 @@ with tabs[1]:
         x="Leakage",
         y="RiskScore",
         size="Leakage_size",
-        color="RegionName",
-        hover_data={
-            "Leakage": False,
-            "Leakage_fmt": True,
-            "RiskScore": True,
-            "RegionName": True
-        }
+        color="RegionName"
+    )
+    
+    fig3.update_traces(
+        customdata=scatter_df[["RegionName", "Leakage_fmt", "RiskScore"]],
+        hovertemplate=
+        "Region: %{customdata[0]}<br>" +
+        "Leakage: %{customdata[1]}<br>" +
+        "Risk Score: %{customdata[2]:.2f}<extra></extra>"
     )
 
     fig3.update_layout(
