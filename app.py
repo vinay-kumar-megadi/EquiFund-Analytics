@@ -746,10 +746,9 @@ with tabs[1]:
         y="RiskScore",
         color="RegionName",
         hover_data={
-            "Leakage": False,
-            "Leakage_fmt": True,
+            "RegionName": True,
             "RiskScore": True,
-            "RegionName": True
+            "Leakage_fmt": True
         }
     )
 
