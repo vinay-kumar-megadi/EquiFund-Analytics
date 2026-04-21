@@ -729,8 +729,8 @@ with tabs[1]:
     scatter_df["Leakage"] = scatter_df["AmountAllocated"] - scatter_df["AmountSpent"]
 
     # ✅ ADD THIS LINE (IMPORTANT)
-    scatter_df["Leakage_size"] = scatter_df["Leakage"].apply(
-    lambda x: "₹ " + format_indian_currency(x)
+    scatter_df["Leakage_fmt"] = scatter_df["Leakage"].apply(
+        lambda x: "₹ " + format_indian_currency(x)
     )
 
     audit_region = df_audit.merge(df_alloc[['AllocationID', 'RegionID']], on='AllocationID')
