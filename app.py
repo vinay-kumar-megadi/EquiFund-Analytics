@@ -729,8 +729,7 @@ with tabs[1]:
     scatter_df["Leakage"] = scatter_df["AmountAllocated"] - scatter_df["AmountSpent"]
 
     # ✅ ADD THIS LINE (IMPORTANT)
-    scatter_df["Leakage_size"] = scatter_df["Leakage"].abs()
-    scatter_df["Leakage_fmt"] = scatter_df["Leakage"].apply(
+    scatter_df["Leakage_size"] = scatter_df["Leakage"].apply(
     lambda x: "₹ " + format_indian_currency(x)
     )
 
@@ -745,16 +744,13 @@ with tabs[1]:
         scatter_df,
         x="Leakage",
         y="RiskScore",
-        size="Leakage_size",
-        color="RegionName"
-    )
-    
-    fig3.update_traces(
-        customdata=scatter_df[["RegionName", "Leakage_fmt", "RiskScore"]],
-        hovertemplate=
-        "Region: %{customdata[0]}<br>" +
-        "Leakage: %{customdata[1]}<br>" +
-        "Risk Score: %{customdata[2]:.2f}<extra></extra>"
+        color="RegionName",
+        hover_data={
+            "Leakage": False,
+            "Leakage_fmt": True,
+            "RiskScore": True,
+            "RegionName": True
+        }
     )
 
     fig3.update_layout(
