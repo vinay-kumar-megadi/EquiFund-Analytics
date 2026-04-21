@@ -745,10 +745,11 @@ with tabs[1]:
         x="Leakage",
         y="RiskScore",
         color="RegionName",
+        hover_name="RegionName",
         hover_data={
-            "RegionName": True,
             "RiskScore": True,
-            "Leakage_fmt": True
+            "Leakage_fmt": True,
+            "Leakage": False   # 👈 removes raw leakage
         }
     )
 
