@@ -1043,6 +1043,9 @@ with tabs[4]:
         title="Monthly Allocation vs Utilization Trend"
     )
 
+    trend["Allocated_fmt"] = trend["AmountAllocated"].apply(lambda x: "₹ " + format_indian_currency(x))
+    trend["Spent_fmt"] = trend["AmountSpent"].apply(lambda x: "₹ " + format_indian_currency(x))
+    
     fig_trend.update_traces(
         customdata=trend[["Allocated_fmt", "Spent_fmt"]],
         hovertemplate="Month: %{x}<br>Amount: %{customdata[0]}<extra></extra>"
