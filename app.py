@@ -720,6 +720,20 @@ with tabs[1]:
 
     # ✅ SCATTER
     st.subheader("Leakage vs Risk")
+        fig3 = px.scatter(
+        scatter_df,
+        x="Leakage",
+        y="RiskScore",
+        color="RegionName",
+        hover_name="RegionName",
+        hover_data={
+            "RiskScore": True,
+            "Leakage_fmt": True,
+            "Leakage": False
+        }
+    )
+    
+    st.plotly_chart(fig3, use_container_width=True)
 
     # ✅ ADD DATE INTO SCATTER DF (GO UP LITTLE BIT AND MODIFY THERE ALSO)
     scatter_df = filtered_df.groupby("RegionName").agg({
@@ -745,6 +759,7 @@ with tabs[1]:
     # format leakage
     top["Leakage"] = top["Leakage"].apply(lambda x: "₹ " + format_indian_currency(x))
     bottom["Leakage"] = bottom["Leakage"].apply(lambda x: "₹ " + format_indian_currency(x))
+    
     st.markdown("---")
 
     # ✅ DISPLAY CLEAN TABLE
