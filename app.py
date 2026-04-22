@@ -721,67 +721,39 @@ with tabs[1]:
     # ✅ SCATTER
     st.subheader("Leakage vs Risk")
 
+    # ✅ ADD DATE INTO SCATTER DF (GO UP LITTLE BIT AND MODIFY THERE ALSO)
     scatter_df = filtered_df.groupby("RegionName").agg({
         "AmountAllocated": "sum",
-        "AmountSpent": "sum"
+        "AmountSpent": "sum",
+        "DateAllocated": "max"   # 👈 ADD THIS LINE
     }).reset_index()
-
+    
+    # format date
+    scatter_df["DateAllocated"] = scatter_df["DateAllocated"].dt.strftime("%d-%b-%Y")
+    
+    # calculate leakage
     scatter_df["Leakage"] = scatter_df["AmountAllocated"] - scatter_df["AmountSpent"]
-
-    # ✅ ADD THIS LINE (IMPORTANT)
-    scatter_df["Leakage_fmt"] = scatter_df["Leakage"].apply(
-        lambda x: "₹ " + format_indian_currency(x)
-    )
-
-    audit_region = df_audit.merge(df_alloc[['AllocationID', 'RegionID']], on='AllocationID')
-    audit_region = audit_region.merge(df_regions[['RegionID', 'RegionName']], on='RegionID')
-
-    risk_region = audit_region.groupby("RegionName")["RiskScore"].mean().reset_index()
-
-    scatter_df = scatter_df.merge(risk_region, on="RegionName", how="left")
-
-    fig3 = px.scatter(
-        scatter_df,
-        x="Leakage",
-        y="RiskScore",
-        color="RegionName",
-        hover_name="RegionName",
-        hover_data={
-            "RiskScore": True,
-            "Leakage_fmt": True,
-            "Leakage": False   # 👈 removes raw leakage
-        }
-    )
-
-    fig3.update_layout(
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#e2e8f0")
-    )
-
-    st.plotly_chart(fig3, use_container_width=True)
-
-    # ✅ CREATE TOP & BOTTOM FIRST
-    top = scatter_df.sort_values("Leakage", ascending=False).head(5).copy()
-    bottom = scatter_df.sort_values("Leakage").head(5).copy()
-
-    # ✅ FORMAT INTO INDIAN CURRENCY
-    top["Leakage"] = top["Leakage"].apply(
-        lambda x: "₹ " + format_indian_currency(x)
-    )
-
-    bottom["Leakage"] = bottom["Leakage"].apply(
-        lambda x: "₹ " + format_indian_currency(x)
-    )
+    
+    # ✅ CREATE TOP & BOTTOM WITH PROPER INDEX
+    top = scatter_df.sort_values("Leakage", ascending=False).head(5).copy().reset_index(drop=True)
+    bottom = scatter_df.sort_values("Leakage").head(5).copy().reset_index(drop=True)
+    
+    # start index from 1
+    top.index = top.index + 1
+    bottom.index = bottom.index + 1
+    
+    # format leakage
+    top["Leakage"] = top["Leakage"].apply(lambda x: "₹ " + format_indian_currency(x))
+    bottom["Leakage"] = bottom["Leakage"].apply(lambda x: "₹ " + format_indian_currency(x))
     st.markdown("---")
 
     # ✅ DISPLAY CLEAN TABLE
     st.markdown("### 🔥 Top Leakage Regions")
-    st.dataframe(top[["RegionName", "Leakage"]])
+    st.dataframe(top[["RegionName", "Leakage", "DateAllocated"]])
     st.markdown("---")
 
     st.markdown("### 🟢 Best Performing Regions")
-    st.dataframe(bottom[["RegionName", "Leakage"]])
+    st.dataframe(bottom[["RegionName", "Leakage", "DateAllocated"]])
     st.markdown("---")
 
     # ✅ GAUGE + AMOUNT
@@ -809,7 +781,7 @@ with tabs[1]:
     st.subheader("Audit Flags")
 
     audit_table = df_audit.merge(
-        filtered_df[['AllocationID', 'RegionID']],
+        filtered_df[['AllocationID', 'RegionID', 'DateAllocated']],  # 👈 ADD DATE
         on='AllocationID',
         how='inner'
     ).merge(
@@ -817,14 +789,17 @@ with tabs[1]:
         on='RegionID',
         how='left'
     )
-
+    
+    # format date
+    audit_table["DateAllocated"] = audit_table["DateAllocated"].dt.strftime("%d-%b-%Y")
+    
     high_risk_df = audit_table[audit_table['RiskScore'] > 0.7][
-        ['RegionName', 'AuditID', 'Status', 'RiskScore']
+        ['RegionName', 'AuditID', 'Status', 'RiskScore', 'DateAllocated']
     ]
-
-    high_risk_count = high_risk_df.shape[0]
-
-    st.dataframe(high_risk_df)
+    
+    # ✅ FIX INDEX
+    high_risk_df = high_risk_df.reset_index(drop=True)
+    high_risk_df.index = high_risk_df.index + 1
     st.markdown("---")
     st.subheader("Audit Findings & Risk Analysis")
 
