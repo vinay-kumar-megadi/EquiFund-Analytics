@@ -781,6 +781,35 @@ with tabs[1]:
     st.dataframe(bottom[["RegionName", "Leakage", "DateAllocated"]])
 
     st.markdown("---")
+    # =========================
+    # LEAKAGE OVERVIEW (GAUGE)
+    # =========================
+    st.subheader("Leakage Overview")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        fig_gauge = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=leakage_pct * 100,
+            title={'text': "Leakage %"},
+            gauge={
+                'axis': {'range': [0, 30]},
+                'bar': {'color': "green"}
+            }
+        ))
+    
+        fig_gauge.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#e2e8f0")
+        )
+    
+        st.plotly_chart(fig_gauge, use_container_width=True)
+    
+    with col2:
+        st.metric("Leakage Amount", f"₹ {format_indian_currency(leakage)}")
+    
+    st.markdown("---")
 
     # =========================
     # AUDIT FLAGS TABLE
