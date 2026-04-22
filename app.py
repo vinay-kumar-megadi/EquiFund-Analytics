@@ -796,6 +796,7 @@ with tabs[1]:
     high_risk_df = audit_table[audit_table['RiskScore'] > 0.7][
         ['RegionName', 'AuditID', 'Status', 'RiskScore', 'DateAllocated']
     ]
+    high_risk_count = high_risk_df.shape[0]
     
     # ✅ FIX INDEX
     high_risk_df = high_risk_df.reset_index(drop=True)
