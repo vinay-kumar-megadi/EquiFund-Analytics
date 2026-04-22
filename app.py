@@ -718,85 +718,77 @@ with tabs[1]:
 
     spacer(20)
 
-    # ✅ SCATTER
+    # =========================
+    # CREATE SCATTER DATA FIRST
+    # =========================
+    scatter_df = filtered_df.groupby("RegionName").agg({
+        "AmountAllocated": "sum",
+        "AmountSpent": "sum",
+        "DateAllocated": "max"
+    }).reset_index()
+
+    scatter_df["Leakage"] = scatter_df["AmountAllocated"] - scatter_df["AmountSpent"]
+
+    # 👉 ADD RISK SCORE BACK
+    audit_region = df_audit.merge(
+        df_alloc[['AllocationID', 'RegionID']], on='AllocationID'
+    ).merge(
+        df_regions[['RegionID', 'RegionName']], on='RegionID'
+    )
+
+    risk_region = audit_region.groupby("RegionName")["RiskScore"].mean().reset_index()
+
+    scatter_df = scatter_df.merge(risk_region, on="RegionName", how="left")
+
+    # format date
+    scatter_df["DateAllocated"] = scatter_df["DateAllocated"].dt.strftime("%d-%b-%Y")
+
+    # =========================
+    # SCATTER PLOT
+    # =========================
     st.subheader("Leakage vs Risk")
-        fig3 = px.scatter(
+
+    fig3 = px.scatter(
         scatter_df,
         x="Leakage",
         y="RiskScore",
         color="RegionName",
-        hover_name="RegionName",
-        hover_data={
-            "RiskScore": True,
-            "Leakage_fmt": True,
-            "Leakage": False
-        }
+        hover_name="RegionName"
     )
-    
+
     st.plotly_chart(fig3, use_container_width=True)
 
-    # ✅ ADD DATE INTO SCATTER DF (GO UP LITTLE BIT AND MODIFY THERE ALSO)
-    scatter_df = filtered_df.groupby("RegionName").agg({
-        "AmountAllocated": "sum",
-        "AmountSpent": "sum",
-        "DateAllocated": "max"   # 👈 ADD THIS LINE
-    }).reset_index()
-    
-    # format date
-    scatter_df["DateAllocated"] = scatter_df["DateAllocated"].dt.strftime("%d-%b-%Y")
-    
-    # calculate leakage
-    scatter_df["Leakage"] = scatter_df["AmountAllocated"] - scatter_df["AmountSpent"]
-    
-    # ✅ CREATE TOP & BOTTOM WITH PROPER INDEX
-    top = scatter_df.sort_values("Leakage", ascending=False).head(5).copy().reset_index(drop=True)
-    bottom = scatter_df.sort_values("Leakage").head(5).copy().reset_index(drop=True)
-    
-    # start index from 1
-    top.index = top.index + 1
-    bottom.index = bottom.index + 1
-    
-    # format leakage
-    top["Leakage"] = top["Leakage"].apply(lambda x: "₹ " + format_indian_currency(x))
-    bottom["Leakage"] = bottom["Leakage"].apply(lambda x: "₹ " + format_indian_currency(x))
-    
     st.markdown("---")
 
-    # ✅ DISPLAY CLEAN TABLE
+    # =========================
+    # TOP & BOTTOM TABLES
+    # =========================
+    top = scatter_df.sort_values("Leakage", ascending=False).head(5).copy().reset_index(drop=True)
+    bottom = scatter_df.sort_values("Leakage").head(5).copy().reset_index(drop=True)
+
+    top.index = top.index + 1
+    bottom.index = bottom.index + 1
+
+    top["Leakage"] = top["Leakage"].apply(lambda x: "₹ " + format_indian_currency(x))
+    bottom["Leakage"] = bottom["Leakage"].apply(lambda x: "₹ " + format_indian_currency(x))
+
     st.markdown("### 🔥 Top Leakage Regions")
     st.dataframe(top[["RegionName", "Leakage", "DateAllocated"]])
+
     st.markdown("---")
 
     st.markdown("### 🟢 Best Performing Regions")
     st.dataframe(bottom[["RegionName", "Leakage", "DateAllocated"]])
+
     st.markdown("---")
 
-    # ✅ GAUGE + AMOUNT
-    st.subheader("Leakage Overview")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        fig_gauge = go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=leakage_pct * 100,
-            title={'text': "Leakage %"}
-        ))
-
-        fig_gauge.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#e2e8f0")
-        )
-        st.plotly_chart(fig_gauge, use_container_width=True)
-
-    with col2:
-        st.metric("Leakage Amount", f"₹ {format_indian_currency(leakage)}")
-    st.markdown("---")
-    # ✅ TABLE WITH REGION
+    # =========================
+    # AUDIT FLAGS TABLE
+    # =========================
     st.subheader("Audit Flags")
 
     audit_table = df_audit.merge(
-        filtered_df[['AllocationID', 'RegionID', 'DateAllocated']],  # 👈 ADD DATE
+        filtered_df[['AllocationID', 'RegionID', 'DateAllocated']],
         on='AllocationID',
         how='inner'
     ).merge(
@@ -804,19 +796,25 @@ with tabs[1]:
         on='RegionID',
         how='left'
     )
-    
-    # format date
+
     audit_table["DateAllocated"] = audit_table["DateAllocated"].dt.strftime("%d-%b-%Y")
-    
+
     high_risk_df = audit_table[audit_table['RiskScore'] > 0.7][
         ['RegionName', 'AuditID', 'Status', 'RiskScore', 'DateAllocated']
     ]
-    high_risk_count = high_risk_df.shape[0]
-    
-    # ✅ FIX INDEX
+
     high_risk_df = high_risk_df.reset_index(drop=True)
     high_risk_df.index = high_risk_df.index + 1
+
+    st.dataframe(high_risk_df)
+
+    high_risk_count = high_risk_df.shape[0]
+
     st.markdown("---")
+
+    # =========================
+    # SUMMARY
+    # =========================
     st.subheader("Audit Findings & Risk Analysis")
 
     st.markdown(f"""
@@ -826,7 +824,6 @@ with tabs[1]:
     👉 Focus audit on top leakage regions first.
     </div>
     """, unsafe_allow_html=True)
-
 with tabs[2]:
 
     spacer(20)
