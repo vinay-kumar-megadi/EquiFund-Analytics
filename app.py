@@ -809,11 +809,13 @@ with tabs[1]:
     st.subheader("Audit Flags")
 
     audit_table = df_audit.merge(
-        df_alloc[['AllocationID', 'RegionID']],
-        on='AllocationID'
+        filtered_df[['AllocationID', 'RegionID']],
+        on='AllocationID',
+        how='inner'
     ).merge(
         df_regions[['RegionID', 'RegionName']],
-        on='RegionID'
+        on='RegionID',
+        how='left'
     )
 
     high_risk_df = audit_table[audit_table['RiskScore'] > 0.7][
