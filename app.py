@@ -785,6 +785,13 @@ with tabs[1]:
         color="RegionName",
         hover_name="RegionName"
     )
+    fig3.update_layout(
+        height=500,   # 👈 increase height
+        margin=dict(l=20, r=20, t=40, b=20),  # 👈 remove extra spacing
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#e2e8f0")
+    )
 
     st.plotly_chart(fig3, use_container_width=True)
 
