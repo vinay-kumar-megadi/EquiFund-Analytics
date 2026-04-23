@@ -921,6 +921,7 @@ with tabs[1]:
     # SCATTER PLOT
     # =========================
     st.subheader("Leakage vs Risk")
+    scatter_df["RiskScore"] = scatter_df["RiskScore"].fillna(0)
 
     # ✅ CREATE REQUIRED COLUMNS (MISSING FIX)
 
