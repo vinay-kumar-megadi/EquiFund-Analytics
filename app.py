@@ -769,8 +769,86 @@ with tabs[0]:
 
     spacer(20)
 
+    # =========================
+    # 🟢 Department Utilization (Radar)
+    # =========================
+    st.markdown("### 🟢 Department Utilization (Radar View)")
+    
+    dept_util = filtered_df.groupby("Department").agg({
+        "AmountAllocated": "sum",
+        "AmountSpent": "sum"
+    }).reset_index()
+    
+    dept_util["UtilRate"] = dept_util["AmountSpent"] / dept_util["AmountAllocated"]
+    
+    # % values
+    dept_util["Util_pct"] = dept_util["UtilRate"] * 100
+    
+    # radar chart
+    fig_radar = go.Figure()
+    
+    fig_radar.add_trace(go.Scatterpolar(
+        r=dept_util["Util_pct"],
+        theta=dept_util["Department"],
+        fill='toself',
+        name="Utilization %"
+    ))
+    
+    fig_radar.update_layout(
+        polar=dict(
+            radialaxis=dict(visible=True, range=[0, 100])
+        ),
+        height=500,
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#e2e8f0"),
+        title="Department Utilization Comparison (%)"
+    )
+    
+    st.plotly_chart(fig_radar, use_container_width=True)
+    # =========================
+    # 🔴 Department Leakage (Waterfall)
+    # =========================
+    st.markdown("### 🔴 Department Leakage (Contribution Analysis)")
+    
+    dept_leak = filtered_df.groupby("Department").agg({
+        "AmountAllocated": "sum",
+        "AmountSpent": "sum"
+    }).reset_index()
+    
+    dept_leak["Leakage"] = dept_leak["AmountAllocated"] - dept_leak["AmountSpent"]
+    
+    total_leak = dept_leak["Leakage"].sum()
+    
+    # % contribution
+    dept_leak["Leak_pct"] = dept_leak["Leakage"] / total_leak
+    
+    # labels
+    dept_leak["Leak_full"] = dept_leak.apply(
+        lambda x: f"₹ {format_indian_currency(x['Leakage'])} ({x['Leak_pct']*100:.2f}%)",
+        axis=1
+    )
+    
+    fig_waterfall = go.Figure(go.Waterfall(
+        x=dept_leak["Department"],
+        y=dept_leak["Leakage"],
+        text=dept_leak["Leak_full"],
+        textposition="outside"
+    ))
+    
+    fig_waterfall.update_layout(
+        height=500,
+        title="Leakage Contribution by Department",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#e2e8f0"),
+        yaxis_title="Leakage (₹)"
+    )
+    
+    st.plotly_chart(fig_waterfall, use_container_width=True)
+
     underfunded = equity[equity["EquityVariance"] < 0].shape[0]
     st.markdown("---")
+
     st.subheader("Executive Summary & Key Insights")
 
     st.markdown(f"""
