@@ -1229,41 +1229,73 @@ with tabs[5]:
     st.plotly_chart(fig_region, use_container_width=True)
 
     # =========================
-    # 🟢 Department-wise Utilization
+    # 🟢 Advanced Utilization View
     # =========================
-    st.markdown("### 🟢 Department-wise Utilization")
+    st.markdown("### 🟢 Department Utilization Insights")
     
-    dept_util = region_data.groupby("Department").agg({
-        "AmountAllocated": "sum",
-        "AmountSpent": "sum"
-    }).reset_index()
+    col1, col2 = st.columns(2)
     
-    dept_util["UtilizationRate"] = dept_util["AmountSpent"] / dept_util["AmountAllocated"]
+    # 🔹 Gauge (overall utilization)
+    with col1:
+        overall_util = (region_data["AmountSpent"].sum() / region_data["AmountAllocated"].sum()) * 100
     
-    # format
-    dept_util["Util_fmt"] = (dept_util["UtilizationRate"] * 100).round(2).astype(str) + "%"
+        fig_gauge = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=overall_util,
+            title={'text': "Overall Utilization %"},
+            gauge={
+                'axis': {'range': [0, 100]},
+                'bar': {'color': "green"},
+                'steps': [
+                    {'range': [0, 50], 'color': "#7f1d1d"},
+                    {'range': [50, 75], 'color': "#f59e0b"},
+                    {'range': [75, 100], 'color': "#10b981"}
+                ]
+            }
+        ))
     
-    fig_util = px.bar(
-        dept_util,
-        x="Department",
-        y="UtilizationRate",
-        color="Department",
-        title="Department-wise Utilization Rate"
-    )
+        fig_gauge.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#e2e8f0")
+        )
     
-    fig_util.update_traces(
-        hovertemplate="Department: %{x}<br>Utilization: %{customdata}<extra></extra>",
-        customdata=dept_util["Util_fmt"]
-    )
+        st.plotly_chart(fig_gauge, use_container_width=True)
     
-    fig_util.update_layout(
-        yaxis_title="Utilization Rate",
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#e2e8f0")
-    )
+    # 🔹 Sorted bar (department comparison)
+    with col2:
+        dept_util = region_data.groupby("Department").agg({
+            "AmountAllocated": "sum",
+            "AmountSpent": "sum"
+        }).reset_index()
     
-    st.plotly_chart(fig_util, use_container_width=True)
+        dept_util["UtilizationRate"] = dept_util["AmountSpent"] / dept_util["AmountAllocated"]
+    
+        dept_util = dept_util.sort_values("UtilizationRate", ascending=False)
+    
+        dept_util["Util_fmt"] = (dept_util["UtilizationRate"] * 100).round(2).astype(str) + "%"
+    
+        fig_util_adv = px.bar(
+            dept_util,
+            x="UtilizationRate",
+            y="Department",
+            orientation="h",
+            color="UtilizationRate",
+            color_continuous_scale="Greens",
+            title="Department Utilization Ranking"
+        )
+    
+        fig_util_adv.update_traces(
+            hovertemplate="Department: %{y}<br>Utilization: %{customdata}",
+            customdata=dept_util["Util_fmt"]
+        )
+    
+        fig_util_adv.update_layout(
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#e2e8f0")
+        )
+    
+        st.plotly_chart(fig_util_adv, use_container_width=True)
 
     util_rate_r = (total_spent_r / total_alloc_r) if total_alloc_r else 0
     leakage_r = total_alloc_r - total_spent_r
