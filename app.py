@@ -1167,7 +1167,7 @@ with tabs[4]:
 
     spacer(20)
 
-    st.subheader("📦 Scheme Analysis")
+    st.subheader("📊 Scheme Analysis Dashboard")
 
     # =========================
     # PREP DATA
@@ -1178,23 +1178,25 @@ with tabs[4]:
     }).reset_index()
 
     scheme_df["Leakage"] = scheme_df["AmountAllocated"] - scheme_df["AmountSpent"]
+    scheme_df["UtilRate"] = scheme_df["AmountSpent"] / scheme_df["AmountAllocated"]
 
     total_alloc_s = scheme_df["AmountAllocated"].sum()
     total_spent_s = scheme_df["AmountSpent"].sum()
     total_leak_s = scheme_df["Leakage"].sum()
 
     # =========================
-    # 🔵 1. ALLOCATION TREEMAP
+    # 🔵 1. SUNBURST (ALLOCATION)
     # =========================
-    st.markdown("### 🔵 Scheme-wise Allocation")
+    st.markdown("### 🔵 Scheme-wise Allocation (Sunburst)")
 
     scheme_df["Alloc_pct"] = scheme_df["AmountAllocated"] / total_alloc_s
+
     scheme_df["Alloc_full"] = scheme_df.apply(
         lambda x: f"₹ {format_indian_currency(x['AmountAllocated'])} ({x['Alloc_pct']*100:.2f}%)",
         axis=1
     )
 
-    fig_alloc = px.treemap(
+    fig_alloc = px.sunburst(
         scheme_df,
         path=["SchemeName"],
         values="AmountAllocated",
@@ -1221,102 +1223,65 @@ with tabs[4]:
     st.markdown("---")
 
     # =========================
-    # 🟢 2. UTILIZATION (GAUGE + BAR)
+    # 🟢 2. UTILIZATION (FUNNEL)
     # =========================
-    st.markdown("### 🟢 Scheme Utilization")
+    st.markdown("### 🟢 Scheme-wise Utilization (Funnel View)")
 
-    col1, col2 = st.columns(2)
+    scheme_df = scheme_df.sort_values("UtilRate", ascending=False)
 
-    # Gauge
-    with col1:
-        overall_util_s = (total_spent_s / total_alloc_s) * 100 if total_alloc_s else 0
+    scheme_df["Util_full"] = scheme_df.apply(
+        lambda x: f"{x['UtilRate']*100:.2f}% (₹ {format_indian_currency(x['AmountSpent'])})",
+        axis=1
+    )
 
-        fig_gauge = go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=overall_util_s,
-            number={'suffix': "%"},
-            title={'text': "Overall Utilization %"},
-            gauge={
-                'axis': {'range': [0, 100]},
-                'bar': {'color': "green"},
-                'steps': [
-                    {'range': [0, 50], 'color': "#7f1d1d"},
-                    {'range': [50, 75], 'color': "#f59e0b"},
-                    {'range': [75, 100], 'color': "#10b981"}
-                ]
-            }
-        ))
+    fig_util = px.funnel(
+        scheme_df,
+        x="AmountSpent",
+        y="SchemeName",
+        color="SchemeName",
+        title="Utilization Ranking by Scheme"
+    )
 
-        fig_gauge.update_layout(
-            height=400,
-            paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#e2e8f0")
-        )
+    fig_util.update_traces(
+        hovertemplate="Scheme: %{y}<br>%{customdata}<extra></extra>",
+        customdata=scheme_df["Util_full"]
+    )
 
-        st.plotly_chart(fig_gauge, use_container_width=True)
+    fig_util.update_layout(
+        height=500,
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#e2e8f0")
+    )
 
-    # Bar Ranking
-    with col2:
-        scheme_df["UtilRate"] = scheme_df["AmountSpent"] / scheme_df["AmountAllocated"]
-
-        scheme_df = scheme_df.sort_values("UtilRate", ascending=False)
-
-        scheme_df["Util_full"] = scheme_df.apply(
-            lambda x: f"{x['UtilRate']*100:.2f}% (₹ {format_indian_currency(x['AmountSpent'])})",
-            axis=1
-        )
-
-        fig_util = px.bar(
-            scheme_df,
-            x="UtilRate",
-            y="SchemeName",
-            orientation="h",
-            color="UtilRate",
-            color_continuous_scale="Greens",
-            title="Scheme Utilization Ranking"
-        )
-
-        fig_util.update_traces(
-            hovertemplate="Scheme: %{y}<br>%{customdata}<extra></extra>",
-            customdata=scheme_df["Util_full"]
-        )
-
-        fig_util.update_layout(
-            height=400,
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#e2e8f0"),
-            xaxis_title="Utilization Rate"
-        )
-
-        st.plotly_chart(fig_util, use_container_width=True)
+    st.plotly_chart(fig_util, use_container_width=True)
 
     st.markdown("---")
 
     # =========================
-    # 🔴 3. LEAKAGE TREEMAP
+    # 🔴 3. LEAKAGE (BUBBLE)
     # =========================
-    st.markdown("### 🔴 Scheme-wise Leakage")
+    st.markdown("### 🔴 Scheme-wise Leakage (Bubble Analysis)")
 
-    scheme_df["Leak_pct"] = scheme_df["Leakage"] / total_leak_s if total_leak_s else 0
+    scheme_df["Leak_pct"] = scheme_df["Leakage"] / total_leak_s
 
     scheme_df["Leak_full"] = scheme_df.apply(
         lambda x: f"₹ {format_indian_currency(x['Leakage'])} ({x['Leak_pct']*100:.2f}%)",
         axis=1
     )
 
-    fig_leak = px.treemap(
+    fig_leak = px.scatter(
         scheme_df,
-        path=["SchemeName"],
-        values="Leakage",
-        color="Leakage",
-        color_continuous_scale="Reds",
-        title="Leakage Distribution by Scheme"
+        x="AmountAllocated",
+        y="AmountSpent",
+        size="Leakage",
+        color="SchemeName",
+        hover_name="SchemeName",
+        title="Allocation vs Utilization vs Leakage"
     )
 
     fig_leak.update_traces(
-        textinfo="label+percent entry",
-        hovertemplate="Scheme: %{label}<br>%{customdata}<extra></extra>",
+        hovertemplate="Scheme: %{hovertext}<br>%{customdata}<extra></extra>",
         customdata=scheme_df["Leak_full"]
     )
 
@@ -1324,7 +1289,9 @@ with tabs[4]:
         height=500,
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#e2e8f0")
+        font=dict(color="#e2e8f0"),
+        xaxis_title="Allocated (₹)",
+        yaxis_title="Utilized (₹)"
     )
 
     st.plotly_chart(fig_leak, use_container_width=True)
@@ -1338,10 +1305,10 @@ with tabs[4]:
 
     st.markdown(f"""
     <div class="custom-alert alert-medium">
-    • Total Scheme Allocation: ₹ {format_indian_currency(total_alloc_s)}<br>
+    • Total Allocation: ₹ {format_indian_currency(total_alloc_s)}<br>
     • Utilization Rate: {(total_spent_s/total_alloc_s):.2%}<br>
     • Total Leakage: ₹ {format_indian_currency(total_leak_s)}<br><br>
-    👉 Identify low-performing schemes for optimization.
+    👉 Schemes with high leakage require immediate review.
     </div>
     """, unsafe_allow_html=True)
 
