@@ -1231,7 +1231,7 @@ with tabs[5]:
    # =========================
     # 🟢 Department Utilization (Advanced)
     # =========================
-    st.markdown("### 🟢 Department Utilization (Advanced)")
+    st.markdown("### 🟢 Department Utilization ")
     
     col1, col2 = st.columns(2)
     
@@ -1319,7 +1319,7 @@ with tabs[5]:
     # =========================
     # 🔴 Department-wise Leakage (Treemap)
     # =========================
-    st.markdown("### 🔴 Department-wise Leakage (Advanced)")
+    st.markdown("### 🔴 Department-wise Leakage")
     
     dept_leak = region_data.groupby("Department").agg({
         "AmountAllocated": "sum",
