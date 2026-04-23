@@ -781,7 +781,7 @@ with tabs[0]:
     # =========================
     # 🟢 Department vs Utilization
     # =========================
-    st.markdown("### 🟢 Department vs Utilization")
+    st.markdown("###  Department vs Utilization")
     
     dept_util = filtered_df.groupby("Department").agg({
         "AmountAllocated": "sum",
@@ -834,7 +834,7 @@ with tabs[0]:
     # =========================
     # 🔴 Department Leakage (Waterfall)
     # =========================
-    st.markdown("### 🔴 Department Leakage (Contribution Analysis)")
+    st.markdown("###  Department Leakage ")
     
     dept_leak = filtered_df.groupby("Department").agg({
         "AmountAllocated": "sum",
@@ -955,12 +955,12 @@ with tabs[1]:
     top["Leakage"] = top["Leakage"].apply(lambda x: "₹ " + format_indian_currency(x))
     bottom["Leakage"] = bottom["Leakage"].apply(lambda x: "₹ " + format_indian_currency(x))
 
-    st.markdown("### 🔥 Top Leakage Regions")
+    st.markdown("###  Top Leakage Regions")
     st.dataframe(top[["RegionName", "Leakage", "DateAllocated"]])
 
     st.markdown("---")
 
-    st.markdown("### 🟢 Best Performing Regions")
+    st.markdown("###  Best Performing Regions")
     st.dataframe(bottom[["RegionName", "Leakage", "DateAllocated"]])
 
     st.markdown("---")
@@ -1104,7 +1104,7 @@ with tabs[2]:
     # ================================
     # 📊 TORNADO CHART
     # ================================
-    st.subheader("📊 Tornado Chart")
+  
     st.markdown("Comparing **Population Poverty %** vs **Budget Allocation %** per region")
 
     poverty_df = df_regions.copy()
@@ -1147,7 +1147,6 @@ with tabs[2]:
     # ================================
     # 🌳 DECOMPOSITION (DRILLDOWN)
     # ================================
-    st.subheader("🌳 Decomposition Tree")
     st.markdown("Drill down from **Department → Scheme → Region** to analyze fund flow")
 
     col1, col2 = st.columns(2)
@@ -1309,7 +1308,7 @@ with tabs[4]:
     # =========================
     # 🔵 1. SUNBURST (ALLOCATION)
     # =========================
-    st.markdown("### 🔵 Scheme-wise Allocation (Sunburst)")
+    st.markdown("###  Scheme-wise Allocation ")
 
     scheme_df["Alloc_pct"] = scheme_df["AmountAllocated"] / total_alloc_s
 
@@ -1349,7 +1348,7 @@ with tabs[4]:
     # =========================
     # 🟢 2. UTILIZATION (FUNNEL)
     # =========================
-    st.markdown("### 🟢 Scheme-wise Utilization (Funnel View)")
+    st.markdown("###  Scheme-wise Utilization ")
 
     scheme_df = scheme_df.sort_values("UtilRate", ascending=False)
 
@@ -1387,7 +1386,7 @@ with tabs[4]:
     # =========================
     # 🔴 Scheme-wise Leakage (Advanced Ranking)
     # =========================
-    st.markdown("### 🔴 Scheme-wise Leakage (Top Impact Analysis)")
+    st.markdown("###  Scheme-wise Leakage ")
     
     # calculate %
     scheme_df["Leak_pct"] = scheme_df["Leakage"] / total_leak_s
@@ -1505,7 +1504,7 @@ with tabs[5]:
    # =========================
     # 🟢 Department Utilization (Advanced)
     # =========================
-    st.markdown("### 🟢 Department Utilization ")
+    st.markdown("###  Department Utilization ")
     
     col1, col2 = st.columns(2)
     
@@ -1597,7 +1596,7 @@ with tabs[5]:
     # =========================
     # 🔴 Department-wise Leakage (Treemap)
     # =========================
-    st.markdown("### 🔴 Department-wise Leakage")
+    st.markdown("###  Department-wise Leakage")
     
     dept_leak = region_data.groupby("Department").agg({
         "AmountAllocated": "sum",
