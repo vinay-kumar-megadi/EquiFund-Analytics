@@ -1228,6 +1228,43 @@ with tabs[5]:
 
     st.plotly_chart(fig_region, use_container_width=True)
 
+    # =========================
+    # 🟢 Department-wise Utilization
+    # =========================
+    st.markdown("### 🟢 Department-wise Utilization")
+    
+    dept_util = region_data.groupby("Department").agg({
+        "AmountAllocated": "sum",
+        "AmountSpent": "sum"
+    }).reset_index()
+    
+    dept_util["UtilizationRate"] = dept_util["AmountSpent"] / dept_util["AmountAllocated"]
+    
+    # format
+    dept_util["Util_fmt"] = (dept_util["UtilizationRate"] * 100).round(2).astype(str) + "%"
+    
+    fig_util = px.bar(
+        dept_util,
+        x="Department",
+        y="UtilizationRate",
+        color="Department",
+        title="Department-wise Utilization Rate"
+    )
+    
+    fig_util.update_traces(
+        hovertemplate="Department: %{x}<br>Utilization: %{customdata}<extra></extra>",
+        customdata=dept_util["Util_fmt"]
+    )
+    
+    fig_util.update_layout(
+        yaxis_title="Utilization Rate",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#e2e8f0")
+    )
+    
+    st.plotly_chart(fig_util, use_container_width=True)
+
     util_rate_r = (total_spent_r / total_alloc_r) if total_alloc_r else 0
     leakage_r = total_alloc_r - total_spent_r
 
