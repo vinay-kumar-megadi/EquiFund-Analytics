@@ -770,41 +770,64 @@ with tabs[0]:
     spacer(20)
 
     # =========================
-    # 🟢 Department Utilization (Radar)
+    # 🟢 Department Utilization (100% Stacked)
     # =========================
-    st.markdown("### 🟢 Department Utilization (Radar View)")
+    st.markdown("### 🟢 Department Utilization (Efficiency View)")
     
     dept_util = filtered_df.groupby("Department").agg({
         "AmountAllocated": "sum",
         "AmountSpent": "sum"
     }).reset_index()
     
-    dept_util["UtilRate"] = dept_util["AmountSpent"] / dept_util["AmountAllocated"]
+    # calculate remaining
+    dept_util["Remaining"] = dept_util["AmountAllocated"] - dept_util["AmountSpent"]
     
-    # % values
-    dept_util["Util_pct"] = dept_util["UtilRate"] * 100
+    # percentages
+    dept_util["Util_pct"] = dept_util["AmountSpent"] / dept_util["AmountAllocated"]
+    dept_util["Rem_pct"] = dept_util["Remaining"] / dept_util["AmountAllocated"]
     
-    # radar chart
-    fig_radar = go.Figure()
-    
-    fig_radar.add_trace(go.Scatterpolar(
-        r=dept_util["Util_pct"],
-        theta=dept_util["Department"],
-        fill='toself',
-        name="Utilization %"
-    ))
-    
-    fig_radar.update_layout(
-        polar=dict(
-            radialaxis=dict(visible=True, range=[0, 100])
-        ),
-        height=500,
-        paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#e2e8f0"),
-        title="Department Utilization Comparison (%)"
+    # melt for stacked chart
+    util_melt = dept_util.melt(
+        id_vars="Department",
+        value_vars=["AmountSpent", "Remaining"],
+        var_name="Type",
+        value_name="Value"
     )
     
-    st.plotly_chart(fig_radar, use_container_width=True)
+    # labels (₹ + %)
+    def format_label(row):
+        if row["Type"] == "AmountSpent":
+            pct = dept_util.loc[row.name % len(dept_util), "Util_pct"]
+        else:
+            pct = dept_util.loc[row.name % len(dept_util), "Rem_pct"]
+        return f"₹ {format_indian_currency(row['Value'])} ({pct*100:.1f}%)"
+    
+    util_melt["Label"] = util_melt.apply(format_label, axis=1)
+    
+    # chart
+    fig_util_stack = px.bar(
+        util_melt,
+        x="Department",
+        y="Value",
+        color="Type",
+        barmode="stack",
+        title="Utilized vs Unutilized Funds by Department"
+    )
+    
+    fig_util_stack.update_traces(
+        hovertemplate="Department: %{x}<br>%{customdata}<extra></extra>",
+        customdata=util_melt["Label"]
+    )
+    
+    fig_util_stack.update_layout(
+        height=500,
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#e2e8f0"),
+        yaxis_title="Amount (₹)"
+    )
+    
+    st.plotly_chart(fig_util_stack, use_container_width=True)
     # =========================
     # 🔴 Department Leakage (Waterfall)
     # =========================
