@@ -424,31 +424,52 @@ def get_ai_insights(summary):
     variation = random.randint(1, 100000)
 
     prompt = f"""
-    You are a financial analyst.
+    You are a government data analyst.
     
-    Analysis ID: {variation}
+    ONLY use the data provided below. Do NOT give generic financial advice.
     
-    Analyze this government fund data:
-    
+    ========================
+    DATA CONTEXT
+    ========================
     {summary}
     
-    Give:
-    - Insights based on selected State and Year
-    - Region-wise performance analysis
-    - Department-wise efficiency
-    - Scheme-wise performance
-    - Date-wise (time trend) observations
-    - Risks (if any)
-    - Clear actionable recommendations
+    ========================
+    OUTPUT FORMAT (STRICT)
+    ========================
     
-    Important:
-    - Use the provided filter context
-    - Mention region names, departments, schemes where relevant
-    - Keep it specific, not generic
+    1. FILTER SUMMARY:
+    - State: mention selected state
+    - Year: mention selected year
+    - Date Range: mention
     
-    Keep it professional.
+    2. REGION INSIGHTS:
+    - Mention specific region names from data
+    - Identify top performing and low performing regions
+    - Mention leakage patterns
+    
+    3. DEPARTMENT ANALYSIS:
+    - Mention top departments by allocation
+    - Identify inefficient departments (if any)
+    
+    4. SCHEME ANALYSIS:
+    - Mention top schemes
+    - Highlight schemes with poor utilization
+    
+    5. TIME (DATE) INSIGHTS:
+    - Mention any trends across dates/months
+    
+    6. KEY RISKS:
+    - Based ONLY on dataset (not generic)
+    
+    7. RECOMMENDATIONS:
+    - Actionable suggestions based on above data
+    
+    IMPORTANT RULES:
+    - MUST include Region, Department, Scheme names
+    - MUST refer to actual data context
+    - DO NOT mention taxation, investment, or unrelated topics
+    - Keep it specific to this dataset only
     """
-
     response = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
         headers={
