@@ -925,16 +925,21 @@ with tabs[1]:
     fig3 = px.scatter(
         scatter_df,
         x="Leakage",
-        y="RiskScore",
+        y="Risk_pct",
         color="RegionName",
         hover_name="RegionName"
     )
+    
+    fig3.update_traces(
+        hovertemplate=
+        "Region: %{hovertext}<br>" +
+        "Leakage: %{customdata[0]}<br>" +
+        "Risk: %{customdata[1]:.2f}%<extra></extra>",
+        customdata=scatter_df[["Leakage_fmt", "Risk_pct"]]
+    )
+    
     fig3.update_layout(
-        height=500,   # 👈 increase height
-        margin=dict(l=20, r=20, t=40, b=20),  # 👈 remove extra spacing
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#e2e8f0")
+        yaxis_title="Risk Score (%)"
     )
 
     st.plotly_chart(fig3, use_container_width=True)
@@ -1293,10 +1298,15 @@ with tabs[4]:
     # =========================
     # PREP DATA
     # =========================
-    scheme_df = filtered_df.groupby("SchemeName").agg({
+    scheme_df = filtered_df.groupby("SchemeName", as_index=False).agg({
         "AmountAllocated": "sum",
         "AmountSpent": "sum"
-    }).reset_index()
+    })
+    
+    # ✅ correct utilization
+    scheme_df["UtilRate"] = (
+        scheme_df["AmountSpent"] / scheme_df["AmountAllocated"]
+    ).fillna(0)
 
     scheme_df["Leakage"] = scheme_df["AmountAllocated"] - scheme_df["AmountSpent"]
     scheme_df["UtilRate"] = scheme_df["AmountSpent"] / scheme_df["AmountAllocated"]
@@ -1458,6 +1468,7 @@ with tabs[5]:
     )
 
     region_data = filtered_df[filtered_df["RegionName"] == region_sel]
+    region_data = region_data.drop_duplicates(subset=["AllocationID"])
 
     total_alloc_r = region_data["AmountAllocated"].sum()
     total_spent_r = region_data["AmountSpent"].sum()
@@ -1472,7 +1483,7 @@ with tabs[5]:
 
     st.markdown("### 📊 Department-wise Allocation")
 
-    dept_region = region_data.groupby("Department")["AmountAllocated"].sum().reset_index()
+    dept_region = region_data.groupby("Department", as_index=False)["AmountAllocated"].sum()
 
     fig_region = px.bar(
         dept_region,
