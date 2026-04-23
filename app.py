@@ -587,6 +587,7 @@ df = df_alloc.merge(df_regions, on="RegionID", how="left")
 df = df.merge(df_schemes, on="SchemeID", how="left")
 df = df.merge(df_util, on="AllocationID", how="left")
 
+df_clean = df.drop_duplicates(subset=["AllocationID"])
 
 st.sidebar.header("Filters")
 
@@ -1308,14 +1309,13 @@ with tabs[4]:
     # =========================
     # PREP DATA
     # =========================
-    scheme_df = filtered_df.drop_duplicates(subset=["AllocationID"]).groupby(
+    scheme_df = df_clean.groupby(
         "SchemeName", as_index=False
     ).agg({
         "AmountAllocated": "sum",
         "AmountSpent": "sum"
     })
     
-    # ✅ correct utilization
     scheme_df["UtilRate"] = (
         scheme_df["AmountSpent"] / scheme_df["AmountAllocated"]
     ).fillna(0)
@@ -1479,7 +1479,7 @@ with tabs[5]:
         filtered_df["RegionName"].unique()
     )
 
-    region_data = filtered_df[filtered_df["RegionName"] == region_sel]
+    region_data = df_clean[df_clean["RegionName"] == region_sel]
     
     total_alloc_r = region_data["AmountAllocated"].sum()
     total_spent_r = region_data["AmountSpent"].sum()
