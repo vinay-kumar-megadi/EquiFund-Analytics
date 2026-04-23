@@ -701,6 +701,8 @@ with tabs[0]:
     
     spacer(20)
     st.markdown("---")
+    spacer(20)
+
 
     # ✅ AREA CHART
     st.subheader("Total Allocated vs Utilized")
@@ -772,8 +774,9 @@ with tabs[0]:
 
     st.plotly_chart(fig2, use_container_width=True)
 
-    spacer(20)
     st.markdown("---")
+    spacer(20)
+
 
     # =========================
     # 🟢 Department vs Utilization
@@ -824,8 +827,9 @@ with tabs[0]:
     
     st.plotly_chart(fig_util, use_container_width=True)
 
-    spacer(20)
     st.markdown("---")
+    spacer(20)
+
     
     # =========================
     # 🔴 Department Leakage (Waterfall)
@@ -870,6 +874,8 @@ with tabs[0]:
 
     underfunded = equity[equity["EquityVariance"] < 0].shape[0]
     st.markdown("---")
+    spacer(20)
+
 
     st.subheader("Executive Summary & Key Insights")
 
@@ -934,6 +940,8 @@ with tabs[1]:
     st.plotly_chart(fig3, use_container_width=True)
 
     st.markdown("---")
+    spacer(20)
+
 
     # =========================
     # TOP & BOTTOM TABLES
@@ -956,6 +964,8 @@ with tabs[1]:
     st.dataframe(bottom[["RegionName", "Leakage", "DateAllocated"]])
 
     st.markdown("---")
+    spacer(20)
+
     # =========================
     # LEAKAGE OVERVIEW (GAUGE)
     # =========================
@@ -985,6 +995,8 @@ with tabs[1]:
         st.metric("Leakage Amount", f"₹ {format_indian_currency(leakage)}")
     
     st.markdown("---")
+    spacer(20)
+
 
     # =========================
     # AUDIT FLAGS TABLE
@@ -1015,6 +1027,8 @@ with tabs[1]:
     high_risk_count = high_risk_df.shape[0]
 
     st.markdown("---")
+    spacer(20)
+
 
     # =========================
     # SUMMARY
@@ -1084,6 +1098,8 @@ with tabs[2]:
     st.plotly_chart(fig_map, use_container_width=True)
 
     st.markdown("---")
+    spacer(20)
+
 
     # ================================
     # 📊 TORNADO CHART
@@ -1125,6 +1141,8 @@ with tabs[2]:
     st.plotly_chart(fig_tornado, use_container_width=True)
 
     st.markdown("---")
+    spacer(20)
+
 
     # ================================
     # 🌳 DECOMPOSITION (DRILLDOWN)
@@ -1174,6 +1192,8 @@ with tabs[2]:
 
     st.plotly_chart(fig_drill, use_container_width=True)
     st.markdown("---")
+    spacer(20)
+
     st.subheader("Equity Analysis & Distribution Insights")
 
     st.markdown(f"""
@@ -1185,6 +1205,8 @@ with tabs[2]:
     """, unsafe_allow_html=True)
 
 with tabs[3]:
+    spacer(20)
+
 
     st.subheader("🧠 AI Insights & Recommendations")
 
@@ -1196,6 +1218,8 @@ with tabs[3]:
     col2.metric("Leakage", f"₹ {format_indian_currency(leakage)}")
 
     st.markdown("---")
+    spacer(20)
+
 
     # =========================
     # BUILD FILTER-AWARE SUMMARY
@@ -1319,6 +1343,8 @@ with tabs[4]:
     st.plotly_chart(fig_alloc, use_container_width=True)
 
     st.markdown("---")
+    spacer(20)
+
 
     # =========================
     # 🟢 2. UTILIZATION (FUNNEL)
@@ -1355,6 +1381,8 @@ with tabs[4]:
     st.plotly_chart(fig_util, use_container_width=True)
 
     st.markdown("---")
+    spacer(20)
+
 
     # =========================
     # 🔴 Scheme-wise Leakage (Advanced Ranking)
@@ -1402,6 +1430,8 @@ with tabs[4]:
     st.plotly_chart(fig_leak, use_container_width=True)
 
     st.markdown("---")
+    spacer(20)
+
 
     # =========================
     # INSIGHTS
@@ -1421,8 +1451,6 @@ with tabs[5]:
 
     spacer(20)
 
-    st.subheader("📍 Regional Deep Analysis")
-
     region_sel = st.selectbox(
         "Select Region",
         filtered_df["RegionName"].unique()
@@ -1437,6 +1465,9 @@ with tabs[5]:
 
     col1.metric("Allocated", f"₹ {format_indian_currency(total_alloc_r)}")
     col2.metric("Utilized", f"₹ {format_indian_currency(total_spent_r)}")
+
+    st.markdown("---")
+    spacer(20)
 
     st.markdown("### 📊 Department-wise Allocation")
 
@@ -1467,8 +1498,9 @@ with tabs[5]:
 
     st.plotly_chart(fig_region, use_container_width=True)
 
-    spacer(20)
     st.markdown("---")
+    spacer(20)
+
 
    # =========================
     # 🟢 Department Utilization (Advanced)
@@ -1559,8 +1591,9 @@ with tabs[5]:
     
         st.plotly_chart(fig_util_adv, use_container_width=True)
 
-    spacer(20)
     st.markdown("---")
+    spacer(20)
+
     # =========================
     # 🔴 Department-wise Leakage (Treemap)
     # =========================
@@ -1615,6 +1648,8 @@ with tabs[5]:
     leakage_r = total_alloc_r - total_spent_r
 
     st.markdown("---")
+    spacer(20)
+
     st.subheader("Regional Performance Analysis & Insights")
 
 
