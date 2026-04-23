@@ -701,39 +701,6 @@ with tabs[0]:
 
     st.plotly_chart(fig, use_container_width=True)
     st.markdown("---")
-    st.subheader("📈 Fund Utilization Trends")
-
-    trend_df = filtered_df.copy()
-    trend_df["Month"] = trend_df["DateAllocated"].dt.to_period("M").astype(str)
-    
-    trend = trend_df.groupby("Month").agg({
-        "AmountAllocated": "sum",
-        "AmountSpent": "sum"
-    }).reset_index()
-    
-    fig_trend = px.line(
-        trend,
-        x="Month",
-        y=["AmountAllocated", "AmountSpent"],
-        markers=True,
-        title="Monthly Allocation vs Utilization Trend"
-    )
-    
-    trend["Allocated_fmt"] = trend["AmountAllocated"].apply(lambda x: "₹ " + format_indian_currency(x))
-    trend["Spent_fmt"] = trend["AmountSpent"].apply(lambda x: "₹ " + format_indian_currency(x))
-    
-    fig_trend.update_traces(
-        customdata=trend[["Allocated_fmt", "Spent_fmt"]],
-        hovertemplate="Month: %{x}<br>Amount: %{customdata[0]}<extra></extra>"
-    )
-    
-    fig_trend.update_layout(
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#e2e8f0")
-    )
-    
-    st.plotly_chart(fig_trend, use_container_width=True)
 
     spacer(20)
 
