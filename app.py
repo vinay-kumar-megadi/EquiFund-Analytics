@@ -770,64 +770,53 @@ with tabs[0]:
     spacer(20)
 
     # =========================
-    # 🟢 Department Utilization (100% Stacked)
+    # 🟢 Department vs Utilization
     # =========================
-    st.markdown("### 🟢 Department Utilization (Efficiency View)")
+    st.markdown("### 🟢 Department vs Utilization")
     
     dept_util = filtered_df.groupby("Department").agg({
         "AmountAllocated": "sum",
         "AmountSpent": "sum"
     }).reset_index()
     
-    # calculate remaining
-    dept_util["Remaining"] = dept_util["AmountAllocated"] - dept_util["AmountSpent"]
+    # utilization %
+    dept_util["UtilRate"] = dept_util["AmountSpent"] / dept_util["AmountAllocated"]
     
-    # percentages
-    dept_util["Util_pct"] = dept_util["AmountSpent"] / dept_util["AmountAllocated"]
-    dept_util["Rem_pct"] = dept_util["Remaining"] / dept_util["AmountAllocated"]
+    # sort
+    dept_util = dept_util.sort_values("UtilRate", ascending=False)
     
-    # melt for stacked chart
-    util_melt = dept_util.melt(
-        id_vars="Department",
-        value_vars=["AmountSpent", "Remaining"],
-        var_name="Type",
-        value_name="Value"
+    # label (₹ + %)
+    dept_util["Util_full"] = dept_util.apply(
+        lambda x: f"{x['UtilRate']*100:.2f}% (₹ {format_indian_currency(x['AmountSpent'])})",
+        axis=1
     )
-    
-    # labels (₹ + %)
-    def format_label(row):
-        if row["Type"] == "AmountSpent":
-            pct = dept_util.loc[row.name % len(dept_util), "Util_pct"]
-        else:
-            pct = dept_util.loc[row.name % len(dept_util), "Rem_pct"]
-        return f"₹ {format_indian_currency(row['Value'])} ({pct*100:.1f}%)"
-    
-    util_melt["Label"] = util_melt.apply(format_label, axis=1)
     
     # chart
-    fig_util_stack = px.bar(
-        util_melt,
-        x="Department",
-        y="Value",
-        color="Type",
-        barmode="stack",
-        title="Utilized vs Unutilized Funds by Department"
+    fig_util = px.bar(
+        dept_util,
+        x="UtilRate",
+        y="Department",
+        orientation="h",
+        color="UtilRate",
+        color_continuous_scale="Greens",
+        title="Department Utilization Ranking"
     )
     
-    fig_util_stack.update_traces(
-        hovertemplate="Department: %{x}<br>%{customdata}<extra></extra>",
-        customdata=util_melt["Label"]
+    fig_util.update_traces(
+        hovertemplate="Department: %{y}<br>%{customdata}<extra></extra>",
+        customdata=dept_util["Util_full"]
     )
     
-    fig_util_stack.update_layout(
+    fig_util.update_layout(
         height=500,
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#e2e8f0"),
-        yaxis_title="Amount (₹)"
+        xaxis_title="Utilization Rate",
+        yaxis_title="Department"
     )
     
-    st.plotly_chart(fig_util_stack, use_container_width=True)
+    st.plotly_chart(fig_util, use_container_width=True)
     # =========================
     # 🔴 Department Leakage (Waterfall)
     # =========================
