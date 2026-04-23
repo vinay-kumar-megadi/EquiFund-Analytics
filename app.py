@@ -1365,6 +1365,8 @@ with tabs[4]:
         title="Utilization Ranking by Scheme"
     )
 
+    fig_util.update_traces(textinfo="none")
+
     fig_util.update_traces(
         hovertemplate="Scheme: %{y}<br>%{customdata}<extra></extra>",
         customdata=scheme_df["Util_full"]
