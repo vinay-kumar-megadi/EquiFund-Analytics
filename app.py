@@ -424,9 +424,12 @@ def get_ai_insights(summary):
     variation = random.randint(1, 100000)
 
     prompt = f"""
-    You are a government data analyst.
+    You are a SENIOR GOVERNMENT AUDITOR reviewing public welfare fund data.
     
-    ONLY use the data provided below. Do NOT give generic financial advice.
+    STRICT RULES:
+    - Use ONLY the provided dataset
+    - DO NOT give generic financial or investment advice
+    - Output must be audit-focused and data-specific
     
     ========================
     DATA CONTEXT
@@ -434,46 +437,80 @@ def get_ai_insights(summary):
     {summary}
     
     ========================
-    OUTPUT FORMAT (STRICT)
+    OUTPUT FORMAT
     ========================
     
-    Use clear section headings WITHOUT numbering.
+    Use clear headings (NO numbering).
+    Use bullet points (-) only.
+    Keep everything concise and professional.
     
-    FORMAT:
+    ----------------------------------------
     
     FILTER SUMMARY:
-    - State: mention selected state
-    - Year: mention selected year
-    - Date Range: mention
+    - Mention State, Year, Date Range clearly
+    
+    ----------------------------------------
     
     REGION INSIGHTS:
-    - Mention specific region names
-    - Identify top and low performing regions
-    - Mention leakage patterns
+    - Identify regions with:
+      • High allocation but low utilization
+      • High leakage
+    - Mention actual region names
+    - Highlight imbalance across regions
+    
+    ----------------------------------------
     
     DEPARTMENT ANALYSIS:
-    - Mention top departments
-    - Identify inefficiencies
+    - Identify top departments by allocation
+    - Highlight departments with:
+      • Low utilization
+      • High leakage
+    - Mention department names clearly
+    
+    ----------------------------------------
     
     SCHEME ANALYSIS:
-    - Mention key schemes
-    - Highlight poor utilization
+    - Identify key schemes receiving highest funds
+    - Highlight schemes with:
+      • Poor utilization
+      • High leakage
+    - Mention scheme names clearly
     
-    TIME (DATE) INSIGHTS:
-    - Mention trends across dates/months
+    ----------------------------------------
     
-    KEY RISKS:
-    - Based only on dataset
+    TIME INSIGHTS:
+    - Identify trends across dates/months
+    - Mention increase/decrease in utilization or leakage
     
-    RECOMMENDATIONS:
-    - Actionable suggestions
+    ----------------------------------------
     
-    IMPORTANT RULES:
-    - DO NOT use numbers like 1,2,3 for headings
-    - DO NOT number bullet points
-    - Use simple bullet points (-)
-    - Keep output clean and structured
+    KEY AUDIT RISKS:
+    - Regional imbalance
+    - Inefficient departments
+    - Underperforming schemes
+    - Delayed utilization
+    
+    ----------------------------------------
+    
+    RECOMMENDATIONS (VERY IMPORTANT):
+    
+    - Keep each recommendation VERY SHORT (one line only)
+    - MUST include State / Region / Department / Scheme name
+    - Focus on audit actions only
+    
+    Examples:
+    - Increase audit monitoring in [Region] due to high leakage
+    - Review [Department] for low utilization efficiency
+    - Reallocate funds from underperforming schemes like [SchemeName]
+    - Prioritize audits in [State] high-risk regions
+    
+    ----------------------------------------
+    
+    IMPORTANT:
+    - DO NOT write long paragraphs
+    - DO NOT give general advice
     - MUST mention Region, Department, Scheme names
+    - Keep recommendations brief and actionable
     """
     response = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
