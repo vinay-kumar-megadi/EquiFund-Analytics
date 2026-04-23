@@ -425,18 +425,27 @@ def get_ai_insights(summary):
 
     prompt = f"""
     You are a financial analyst.
-
+    
     Analysis ID: {variation}
-
+    
     Analyze this government fund data:
-
+    
     {summary}
-
+    
     Give:
-    - Key insights
-    - Risks
-    - Recommendations
-
+    - Insights based on selected State and Year
+    - Region-wise performance analysis
+    - Department-wise efficiency
+    - Scheme-wise performance
+    - Date-wise (time trend) observations
+    - Risks (if any)
+    - Clear actionable recommendations
+    
+    Important:
+    - Use the provided filter context
+    - Mention region names, departments, schemes where relevant
+    - Keep it specific, not generic
+    
     Keep it professional.
     """
 
@@ -1022,7 +1031,59 @@ with tabs[3]:
 
     st.markdown("---")
 
-    summary = f"""..."""
+    # =========================
+    # BUILD FILTER-AWARE SUMMARY
+    # =========================
+    
+    # Top regions (by allocation)
+    top_regions = filtered_df.groupby("RegionName")["AmountAllocated"].sum().nlargest(5).index.tolist()
+    
+    # Top departments
+    top_departments = filtered_df.groupby("Department")["AmountAllocated"].sum().nlargest(5).index.tolist()
+    
+    # Top schemes
+    top_schemes = filtered_df.groupby("SchemeName")["AmountAllocated"].sum().nlargest(5).index.tolist()
+    
+    # date range
+    date_min = filtered_df["DateAllocated"].min()
+    date_max = filtered_df["DateAllocated"].max()
+    
+    # convert dates
+    date_range = f"{date_min.strftime('%d-%b-%Y')} to {date_max.strftime('%d-%b-%Y')}"
+    
+    # state display
+    state_selected = state if state != "All States" else "All States"
+    
+    summary = f"""
+    FILTER CONTEXT:
+    - State: {state_selected}
+    - Year: {year}
+    - Date Range: {date_range}
+    
+    KEY METRICS:
+    - Total Allocation: ₹ {format_indian_currency(total_alloc)}
+    - Total Utilization: ₹ {format_indian_currency(total_util)}
+    - Leakage: ₹ {format_indian_currency(leakage)}
+    - Utilization Rate: {util_rate:.2%}
+    
+    TOP REGIONS:
+    {", ".join(top_regions)}
+    
+    TOP DEPARTMENTS:
+    {", ".join(top_departments)}
+    
+    TOP SCHEMES:
+    {", ".join(top_schemes)}
+    
+    INSTRUCTION:
+    Provide detailed insights, risks, and recommendations 
+    based on this filtered dataset.
+    Mention:
+    - Region-wise observations
+    - Department performance
+    - Scheme efficiency
+    - Time-based patterns
+    """
 
     if st.button("🤖 Generate AI Insights"):
 
