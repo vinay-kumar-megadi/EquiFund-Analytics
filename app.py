@@ -1259,41 +1259,48 @@ with tabs[4]:
     st.markdown("---")
 
     # =========================
-    # 🔴 3. LEAKAGE (BUBBLE)
+    # 🔴 Scheme-wise Leakage (Advanced Ranking)
     # =========================
-    st.markdown("### 🔴 Scheme-wise Leakage (Bubble Analysis)")
-
+    st.markdown("### 🔴 Scheme-wise Leakage (Top Impact Analysis)")
+    
+    # calculate %
     scheme_df["Leak_pct"] = scheme_df["Leakage"] / total_leak_s
-
+    
+    # sort (highest leakage first)
+    scheme_df = scheme_df.sort_values("Leakage", ascending=False)
+    
+    # full label (₹ + %)
     scheme_df["Leak_full"] = scheme_df.apply(
         lambda x: f"₹ {format_indian_currency(x['Leakage'])} ({x['Leak_pct']*100:.2f}%)",
         axis=1
     )
-
-    fig_leak = px.scatter(
+    
+    # bar chart
+    fig_leak = px.bar(
         scheme_df,
-        x="AmountAllocated",
-        y="AmountSpent",
-        size="Leakage",
-        color="SchemeName",
-        hover_name="SchemeName",
-        title="Allocation vs Utilization vs Leakage"
+        x="Leakage",
+        y="SchemeName",
+        orientation="h",
+        color="Leakage",
+        color_continuous_scale="Reds",
+        title="Leakage Ranking by Scheme"
     )
-
+    
+    # show ₹ + %
     fig_leak.update_traces(
-        hovertemplate="Scheme: %{hovertext}<br>%{customdata}<extra></extra>",
+        hovertemplate="Scheme: %{y}<br>%{customdata}<extra></extra>",
         customdata=scheme_df["Leak_full"]
     )
-
+    
     fig_leak.update_layout(
         height=500,
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#e2e8f0"),
-        xaxis_title="Allocated (₹)",
-        yaxis_title="Utilized (₹)"
+        xaxis_title="Leakage (₹)",
+        yaxis_title="Scheme"
     )
-
+    
     st.plotly_chart(fig_leak, use_container_width=True)
 
     st.markdown("---")
