@@ -437,38 +437,43 @@ def get_ai_insights(summary):
     OUTPUT FORMAT (STRICT)
     ========================
     
-    1. FILTER SUMMARY:
+    Use clear section headings WITHOUT numbering.
+    
+    FORMAT:
+    
+    FILTER SUMMARY:
     - State: mention selected state
     - Year: mention selected year
     - Date Range: mention
     
-    2. REGION INSIGHTS:
-    - Mention specific region names from data
-    - Identify top performing and low performing regions
+    REGION INSIGHTS:
+    - Mention specific region names
+    - Identify top and low performing regions
     - Mention leakage patterns
     
-    3. DEPARTMENT ANALYSIS:
-    - Mention top departments by allocation
-    - Identify inefficient departments (if any)
+    DEPARTMENT ANALYSIS:
+    - Mention top departments
+    - Identify inefficiencies
     
-    4. SCHEME ANALYSIS:
-    - Mention top schemes
-    - Highlight schemes with poor utilization
+    SCHEME ANALYSIS:
+    - Mention key schemes
+    - Highlight poor utilization
     
-    5. TIME (DATE) INSIGHTS:
-    - Mention any trends across dates/months
+    TIME (DATE) INSIGHTS:
+    - Mention trends across dates/months
     
-    6. KEY RISKS:
-    - Based ONLY on dataset (not generic)
+    KEY RISKS:
+    - Based only on dataset
     
-    7. RECOMMENDATIONS:
-    - Actionable suggestions based on above data
+    RECOMMENDATIONS:
+    - Actionable suggestions
     
     IMPORTANT RULES:
-    - MUST include Region, Department, Scheme names
-    - MUST refer to actual data context
-    - DO NOT mention taxation, investment, or unrelated topics
-    - Keep it specific to this dataset only
+    - DO NOT use numbers like 1,2,3 for headings
+    - DO NOT number bullet points
+    - Use simple bullet points (-)
+    - Keep output clean and structured
+    - MUST mention Region, Department, Scheme names
     """
     response = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
