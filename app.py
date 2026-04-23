@@ -848,7 +848,6 @@ with tabs[1]:
 
     st.markdown(f"""
     <div class="custom-alert alert-high">
-    • High Risk Regions: {high_risk_count}<br>
     • Regions with high leakage tend to have higher risk scores<br><br>
     👉 Focus audit on top leakage regions first.
     </div>
@@ -1020,7 +1019,6 @@ with tabs[3]:
     col1.metric("Utilization Rate", f"{util_rate:.2%}")
 
     col2.metric("Leakage", f"₹ {format_indian_currency(leakage)}")
-    col2.metric("Risk Regions", high_risk_df.shape[0])
 
     st.markdown("---")
 
