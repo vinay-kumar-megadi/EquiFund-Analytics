@@ -1296,6 +1296,43 @@ with tabs[5]:
         )
     
         st.plotly_chart(fig_util_adv, use_container_width=True)
+    # =========================
+    # 🔴 Advanced Leakage Treemap
+    # =========================
+    st.markdown("### 🔴 Department-wise Leakage (Treemap)")
+    
+    dept_leak = region_data.groupby("Department").agg({
+        "AmountAllocated": "sum",
+        "AmountSpent": "sum"
+    }).reset_index()
+    
+    dept_leak["Leakage"] = dept_leak["AmountAllocated"] - dept_leak["AmountSpent"]
+    
+    dept_leak["Leakage_fmt"] = dept_leak["Leakage"].apply(
+        lambda x: "₹ " + format_indian_currency(x)
+    )
+    
+    fig_tree = px.treemap(
+        dept_leak,
+        path=["Department"],
+        values="Leakage",
+        color="Leakage",
+        color_continuous_scale="Reds",
+        title="Leakage Distribution by Department"
+    )
+    
+    fig_tree.update_traces(
+        hovertemplate="Department: %{label}<br>Leakage: %{customdata}",
+        customdata=dept_leak["Leakage_fmt"]
+    )
+    
+    fig_tree.update_layout(
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#e2e8f0")
+    )
+    
+    st.plotly_chart(fig_tree, use_container_width=True)
 
     util_rate_r = (total_spent_r / total_alloc_r) if total_alloc_r else 0
     leakage_r = total_alloc_r - total_spent_r
