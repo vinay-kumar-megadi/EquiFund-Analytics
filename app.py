@@ -622,7 +622,7 @@ tabs = st.tabs([
     "⚠️ Audit",
     "🌍 Equity",
     "🧠 AI Insights",
-    "📈 Trends",
+    "📦 Scheme Analysis",
     "📍 Regional Analysis"
 ])
 
@@ -1167,47 +1167,181 @@ with tabs[4]:
 
     spacer(20)
 
-    st.subheader("📈 Fund Utilization Trends")
+    st.subheader("📦 Scheme Analysis")
 
-    trend_df = filtered_df.copy()
-    trend_df["Month"] = trend_df["DateAllocated"].dt.to_period("M").astype(str)
-
-    trend = trend_df.groupby("Month").agg({
+    # =========================
+    # PREP DATA
+    # =========================
+    scheme_df = filtered_df.groupby("SchemeName").agg({
         "AmountAllocated": "sum",
         "AmountSpent": "sum"
     }).reset_index()
 
-    fig_trend = px.line(
-        trend,
-        x="Month",
-        y=["AmountAllocated", "AmountSpent"],
-        markers=True,
-        title="Monthly Allocation vs Utilization Trend"
+    scheme_df["Leakage"] = scheme_df["AmountAllocated"] - scheme_df["AmountSpent"]
+
+    total_alloc_s = scheme_df["AmountAllocated"].sum()
+    total_spent_s = scheme_df["AmountSpent"].sum()
+    total_leak_s = scheme_df["Leakage"].sum()
+
+    # =========================
+    # 🔵 1. ALLOCATION TREEMAP
+    # =========================
+    st.markdown("### 🔵 Scheme-wise Allocation")
+
+    scheme_df["Alloc_pct"] = scheme_df["AmountAllocated"] / total_alloc_s
+    scheme_df["Alloc_full"] = scheme_df.apply(
+        lambda x: f"₹ {format_indian_currency(x['AmountAllocated'])} ({x['Alloc_pct']*100:.2f}%)",
+        axis=1
     )
 
-    trend["Allocated_fmt"] = trend["AmountAllocated"].apply(lambda x: "₹ " + format_indian_currency(x))
-    trend["Spent_fmt"] = trend["AmountSpent"].apply(lambda x: "₹ " + format_indian_currency(x))
-    
-    fig_trend.update_traces(
-        customdata=trend[["Allocated_fmt", "Spent_fmt"]],
-        hovertemplate="Month: %{x}<br>Amount: %{customdata[0]}<extra></extra>"
+    fig_alloc = px.treemap(
+        scheme_df,
+        path=["SchemeName"],
+        values="AmountAllocated",
+        color="AmountAllocated",
+        color_continuous_scale="Blues",
+        title="Allocation Distribution by Scheme"
     )
 
-    fig_trend.update_layout(
+    fig_alloc.update_traces(
+        textinfo="label+percent entry",
+        hovertemplate="Scheme: %{label}<br>%{customdata}<extra></extra>",
+        customdata=scheme_df["Alloc_full"]
+    )
+
+    fig_alloc.update_layout(
+        height=500,
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#e2e8f0")
     )
 
-    st.plotly_chart(fig_trend, use_container_width=True)
-    st.markdown("---")
-    st.subheader("Trend Analysis & Performance Insights")
+    st.plotly_chart(fig_alloc, use_container_width=True)
 
-    st.markdown("""
+    st.markdown("---")
+
+    # =========================
+    # 🟢 2. UTILIZATION (GAUGE + BAR)
+    # =========================
+    st.markdown("### 🟢 Scheme Utilization")
+
+    col1, col2 = st.columns(2)
+
+    # Gauge
+    with col1:
+        overall_util_s = (total_spent_s / total_alloc_s) * 100 if total_alloc_s else 0
+
+        fig_gauge = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=overall_util_s,
+            number={'suffix': "%"},
+            title={'text': "Overall Utilization %"},
+            gauge={
+                'axis': {'range': [0, 100]},
+                'bar': {'color': "green"},
+                'steps': [
+                    {'range': [0, 50], 'color': "#7f1d1d"},
+                    {'range': [50, 75], 'color': "#f59e0b"},
+                    {'range': [75, 100], 'color': "#10b981"}
+                ]
+            }
+        ))
+
+        fig_gauge.update_layout(
+            height=400,
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#e2e8f0")
+        )
+
+        st.plotly_chart(fig_gauge, use_container_width=True)
+
+    # Bar Ranking
+    with col2:
+        scheme_df["UtilRate"] = scheme_df["AmountSpent"] / scheme_df["AmountAllocated"]
+
+        scheme_df = scheme_df.sort_values("UtilRate", ascending=False)
+
+        scheme_df["Util_full"] = scheme_df.apply(
+            lambda x: f"{x['UtilRate']*100:.2f}% (₹ {format_indian_currency(x['AmountSpent'])})",
+            axis=1
+        )
+
+        fig_util = px.bar(
+            scheme_df,
+            x="UtilRate",
+            y="SchemeName",
+            orientation="h",
+            color="UtilRate",
+            color_continuous_scale="Greens",
+            title="Scheme Utilization Ranking"
+        )
+
+        fig_util.update_traces(
+            hovertemplate="Scheme: %{y}<br>%{customdata}<extra></extra>",
+            customdata=scheme_df["Util_full"]
+        )
+
+        fig_util.update_layout(
+            height=400,
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#e2e8f0"),
+            xaxis_title="Utilization Rate"
+        )
+
+        st.plotly_chart(fig_util, use_container_width=True)
+
+    st.markdown("---")
+
+    # =========================
+    # 🔴 3. LEAKAGE TREEMAP
+    # =========================
+    st.markdown("### 🔴 Scheme-wise Leakage")
+
+    scheme_df["Leak_pct"] = scheme_df["Leakage"] / total_leak_s if total_leak_s else 0
+
+    scheme_df["Leak_full"] = scheme_df.apply(
+        lambda x: f"₹ {format_indian_currency(x['Leakage'])} ({x['Leak_pct']*100:.2f}%)",
+        axis=1
+    )
+
+    fig_leak = px.treemap(
+        scheme_df,
+        path=["SchemeName"],
+        values="Leakage",
+        color="Leakage",
+        color_continuous_scale="Reds",
+        title="Leakage Distribution by Scheme"
+    )
+
+    fig_leak.update_traces(
+        textinfo="label+percent entry",
+        hovertemplate="Scheme: %{label}<br>%{customdata}<extra></extra>",
+        customdata=scheme_df["Leak_full"]
+    )
+
+    fig_leak.update_layout(
+        height=500,
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#e2e8f0")
+    )
+
+    st.plotly_chart(fig_leak, use_container_width=True)
+
+    st.markdown("---")
+
+    # =========================
+    # INSIGHTS
+    # =========================
+    st.subheader("Scheme Performance Insights")
+
+    st.markdown(f"""
     <div class="custom-alert alert-medium">
-    • Fluctuations show inconsistent funding cycles<br>
-    • Large gaps = inefficiency<br>
-    • Smooth trend = better governance
+    • Total Scheme Allocation: ₹ {format_indian_currency(total_alloc_s)}<br>
+    • Utilization Rate: {(total_spent_s/total_alloc_s):.2%}<br>
+    • Total Leakage: ₹ {format_indian_currency(total_leak_s)}<br><br>
+    👉 Identify low-performing schemes for optimization.
     </div>
     """, unsafe_allow_html=True)
 
