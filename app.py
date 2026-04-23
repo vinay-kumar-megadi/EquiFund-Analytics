@@ -1228,20 +1228,27 @@ with tabs[5]:
 
     st.plotly_chart(fig_region, use_container_width=True)
 
+   # =========================
+    # 🟢 Department Utilization (Advanced)
     # =========================
-    # 🟢 Advanced Utilization View
-    # =========================
-    st.markdown("### 🟢 Department Utilization Insights")
+    st.markdown("### 🟢 Department Utilization (Advanced)")
     
     col1, col2 = st.columns(2)
     
-    # 🔹 Gauge (overall utilization)
+    # -------------------------
+    # GAUGE (Overall Utilization)
+    # -------------------------
     with col1:
-        overall_util = (region_data["AmountSpent"].sum() / region_data["AmountAllocated"].sum()) * 100
+    
+        total_alloc_r = region_data["AmountAllocated"].sum()
+        total_spent_r = region_data["AmountSpent"].sum()
+    
+        overall_util = (total_spent_r / total_alloc_r) * 100 if total_alloc_r else 0
     
         fig_gauge = go.Figure(go.Indicator(
             mode="gauge+number",
             value=overall_util,
+            number={'suffix': "%"},
             title={'text': "Overall Utilization %"},
             gauge={
                 'axis': {'range': [0, 100]},
@@ -1255,14 +1262,19 @@ with tabs[5]:
         ))
     
         fig_gauge.update_layout(
+            height=400,
             paper_bgcolor="rgba(0,0,0,0)",
             font=dict(color="#e2e8f0")
         )
     
         st.plotly_chart(fig_gauge, use_container_width=True)
     
-    # 🔹 Sorted bar (department comparison)
+    
+    # -------------------------
+    # RANKING BAR CHART
+    # -------------------------
     with col2:
+    
         dept_util = region_data.groupby("Department").agg({
             "AmountAllocated": "sum",
             "AmountSpent": "sum"
@@ -1270,9 +1282,14 @@ with tabs[5]:
     
         dept_util["UtilizationRate"] = dept_util["AmountSpent"] / dept_util["AmountAllocated"]
     
+        # sort
         dept_util = dept_util.sort_values("UtilizationRate", ascending=False)
     
-        dept_util["Util_fmt"] = (dept_util["UtilizationRate"] * 100).round(2).astype(str) + "%"
+        # full label
+        dept_util["Util_full"] = dept_util.apply(
+            lambda x: f"{x['UtilizationRate']*100:.2f}% (₹ {format_indian_currency(x['AmountSpent'])})",
+            axis=1
+        )
     
         fig_util_adv = px.bar(
             dept_util,
@@ -1285,33 +1302,46 @@ with tabs[5]:
         )
     
         fig_util_adv.update_traces(
-            hovertemplate="Department: %{y}<br>Utilization: %{customdata}",
-            customdata=dept_util["Util_fmt"]
+            hovertemplate="Department: %{y}<br>%{customdata}<extra></extra>",
+            customdata=dept_util["Util_full"]
         )
     
         fig_util_adv.update_layout(
+            height=400,
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#e2e8f0")
+            font=dict(color="#e2e8f0"),
+            xaxis_title="Utilization Rate",
+            yaxis_title="Department"
         )
     
         st.plotly_chart(fig_util_adv, use_container_width=True)
     # =========================
-    # 🔴 Advanced Leakage Treemap
+    # 🔴 Department-wise Leakage (Treemap)
     # =========================
-    st.markdown("### 🔴 Department-wise Leakage (Treemap)")
+    st.markdown("### 🔴 Department-wise Leakage (Advanced)")
     
     dept_leak = region_data.groupby("Department").agg({
         "AmountAllocated": "sum",
         "AmountSpent": "sum"
     }).reset_index()
     
+    # calculate leakage
     dept_leak["Leakage"] = dept_leak["AmountAllocated"] - dept_leak["AmountSpent"]
     
-    dept_leak["Leakage_fmt"] = dept_leak["Leakage"].apply(
-        lambda x: "₹ " + format_indian_currency(x)
+    # total leakage
+    total_leakage = dept_leak["Leakage"].sum()
+    
+    # percentage
+    dept_leak["Leak_pct"] = dept_leak["Leakage"] / total_leakage
+    
+    # combined display
+    dept_leak["Leak_full"] = dept_leak.apply(
+        lambda x: f"₹ {format_indian_currency(x['Leakage'])} ({x['Leak_pct']*100:.2f}%)",
+        axis=1
     )
     
+    # treemap
     fig_tree = px.treemap(
         dept_leak,
         path=["Department"],
@@ -1322,11 +1352,13 @@ with tabs[5]:
     )
     
     fig_tree.update_traces(
-        hovertemplate="Department: %{label}<br>Leakage: %{customdata}",
-        customdata=dept_leak["Leakage_fmt"]
+        textinfo="label+percent entry",
+        hovertemplate="Department: %{label}<br>Leakage: %{customdata}<extra></extra>",
+        customdata=dept_leak["Leak_full"]
     )
     
     fig_tree.update_layout(
+        height=500,
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#e2e8f0")
