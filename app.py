@@ -922,6 +922,14 @@ with tabs[1]:
     # =========================
     st.subheader("Leakage vs Risk")
 
+    # ✅ CREATE REQUIRED COLUMNS (MISSING FIX)
+
+    scatter_df["Leakage_fmt"] = scatter_df["Leakage"].apply(
+        lambda x: "₹ " + format_indian_currency(x)
+    )
+    
+    scatter_df["Risk_pct"] = scatter_df["RiskScore"].fillna(0) * 100
+
     fig3 = px.scatter(
         scatter_df,
         x="Leakage",
