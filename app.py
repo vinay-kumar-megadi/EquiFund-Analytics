@@ -948,7 +948,8 @@ with tabs[1]:
     )
     
     fig3.update_layout(
-        yaxis_title="Risk Score (%)"
+        yaxis_title="Risk Score (%)",
+        xaxis_title="Leakage (₹)"
     )
 
     st.plotly_chart(fig3, use_container_width=True)
@@ -1307,7 +1308,9 @@ with tabs[4]:
     # =========================
     # PREP DATA
     # =========================
-    scheme_df = filtered_df.groupby("SchemeName", as_index=False).agg({
+    scheme_df = filtered_df.drop_duplicates(subset=["AllocationID"]).groupby(
+        "SchemeName", as_index=False
+    ).agg({
         "AmountAllocated": "sum",
         "AmountSpent": "sum"
     })
@@ -1318,7 +1321,7 @@ with tabs[4]:
     ).fillna(0)
 
     scheme_df["Leakage"] = scheme_df["AmountAllocated"] - scheme_df["AmountSpent"]
-    scheme_df["UtilRate"] = scheme_df["AmountSpent"] / scheme_df["AmountAllocated"]
+   
 
     total_alloc_s = scheme_df["AmountAllocated"].sum()
     total_spent_s = scheme_df["AmountSpent"].sum()
@@ -1477,8 +1480,7 @@ with tabs[5]:
     )
 
     region_data = filtered_df[filtered_df["RegionName"] == region_sel]
-    region_data = region_data.drop_duplicates(subset=["AllocationID"])
-
+    
     total_alloc_r = region_data["AmountAllocated"].sum()
     total_spent_r = region_data["AmountSpent"].sum()
 
@@ -1492,7 +1494,9 @@ with tabs[5]:
 
     st.markdown("### 📊 Department-wise Allocation")
 
-    dept_region = region_data.groupby("Department", as_index=False)["AmountAllocated"].sum()
+    dept_region = region_data.groupby("Department", as_index=False).agg({
+        "AmountAllocated": "sum"
+    })
 
     fig_region = px.bar(
         dept_region,
