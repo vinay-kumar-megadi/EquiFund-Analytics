@@ -664,6 +664,7 @@ tabs = st.tabs([
 ])
 
 with tabs[0]:
+    spacer(20)
 
     # ✅ KPI HORIZONTAL
     col1, col2, col3 = st.columns(3)
@@ -772,6 +773,7 @@ with tabs[0]:
     st.plotly_chart(fig2, use_container_width=True)
 
     spacer(20)
+    st.markdown("---")
 
     # =========================
     # 🟢 Department vs Utilization
@@ -821,6 +823,10 @@ with tabs[0]:
     )
     
     st.plotly_chart(fig_util, use_container_width=True)
+
+    spacer(20)
+    st.markdown("---")
+    
     # =========================
     # 🔴 Department Leakage (Waterfall)
     # =========================
@@ -1261,8 +1267,6 @@ with tabs[4]:
 
     spacer(20)
 
-    st.subheader("📊 Scheme Analysis Dashboard")
-
     # =========================
     # PREP DATA
     # =========================
@@ -1463,6 +1467,9 @@ with tabs[5]:
 
     st.plotly_chart(fig_region, use_container_width=True)
 
+    spacer(20)
+    st.markdown("---")
+
    # =========================
     # 🟢 Department Utilization (Advanced)
     # =========================
@@ -1551,6 +1558,9 @@ with tabs[5]:
         )
     
         st.plotly_chart(fig_util_adv, use_container_width=True)
+
+    spacer(20)
+    st.markdown("---")
     # =========================
     # 🔴 Department-wise Leakage (Treemap)
     # =========================
