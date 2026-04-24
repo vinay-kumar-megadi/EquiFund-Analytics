@@ -914,7 +914,8 @@ with tabs[1]:
 
     scatter_df = filtered_df.groupby("RegionName").agg({
         "AmountAllocated": "sum",
-        "AmountSpent": "sum"
+        "AmountSpent": "sum",
+        "DateAllocated": "max"   # ✅ ADD THIS LINE
     }).reset_index()
 
     scatter_df["Leakage"] = scatter_df["AmountAllocated"] - scatter_df["AmountSpent"]
