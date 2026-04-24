@@ -904,7 +904,7 @@ with tabs[1]:
     # -------------------------
     # Create Region Data
     # -------------------------
-        region_fin = filtered_df.groupby("RegionName").agg({
+    region_fin = filtered_df.groupby("RegionName").agg({
         "AmountAllocated": "sum",
         "AmountSpent": "sum",
         "DateAllocated": "max"
