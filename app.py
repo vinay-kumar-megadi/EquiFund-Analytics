@@ -583,14 +583,18 @@ def kpi_card(title, value):
 # -----------------------------
 # MERGE
 # -----------------------------
-df = df_alloc.merge(df_regions, on="RegionID", how="left")
-df = df.merge(df_schemes, on="SchemeID", how="left")
+# aggregate utilization first
 df_util_clean = df_util.groupby("AllocationID", as_index=False).agg({
     "AmountSpent": "sum"
 })
-df = df.merge(df_util_clean, on="AllocationID", how="left")
 
-df_clean = df.drop_duplicates(subset=["AllocationID"])
+# merge ONLY once and avoid duplication
+df = df_alloc.merge(df_util_clean, on="AllocationID", how="left")
+
+# now merge dimensions
+df = df.merge(df_regions, on="RegionID", how="left")
+df = df.merge(df_schemes, on="SchemeID", how="left")
+df = df.drop_duplicates(subset=["AllocationID"])
 
 st.sidebar.header("Filters")
 
@@ -904,11 +908,10 @@ with tabs[1]:
     # -------------------------
     # Create Region Data
     # -------------------------
-    region_fin = filtered_df.groupby("RegionName").agg({
+    region_fin = filtered_df.groupby("RegionName", as_index=False).agg({
         "AmountAllocated": "sum",
-        "AmountSpent": "sum",
-        "DateAllocated": "max"
-    }).reset_index()
+        "AmountSpent": "sum"
+    })
     
     region_fin["Leakage"] = region_fin["AmountAllocated"] - region_fin["AmountSpent"]
     
