@@ -917,6 +917,7 @@ with tabs[1]:
         "AmountSpent": "sum",
         "DateAllocated": "max"   # ✅ ADD THIS LINE
     }).reset_index()
+    scatter_df["DateAllocated"] = scatter_df["DateAllocated"].dt.strftime("%d-%b-%Y")
 
     scatter_df["Leakage"] = scatter_df["AmountAllocated"] - scatter_df["AmountSpent"]
 
