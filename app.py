@@ -897,66 +897,37 @@ with tabs[1]:
     spacer(20)
 
     # =========================
-    # CREATE SCATTER DATA FIRST
+    # 🔴 Leakage vs Risk (Heatmap)
     # =========================
-    scatter_df = filtered_df.groupby("RegionName").agg({
-        "AmountAllocated": "sum",
-        "AmountSpent": "sum",
-        "DateAllocated": "max"
-    }).reset_index()
-
-    scatter_df["Leakage"] = scatter_df["AmountAllocated"] - scatter_df["AmountSpent"]
-
-    # 👉 ADD RISK SCORE BACK
-    audit_region = df_audit.merge(
-        df_alloc[['AllocationID', 'RegionID']], on='AllocationID'
-    ).merge(
-        df_regions[['RegionID', 'RegionName']], on='RegionID'
-    )
-
-    risk_region = audit_region.groupby("RegionName")["RiskScore"].mean().reset_index()
-
-    scatter_df = scatter_df.merge(risk_region, on="RegionName", how="left")
-
-    # format date
-    scatter_df["DateAllocated"] = scatter_df["DateAllocated"].dt.strftime("%d-%b-%Y")
-
-    # =========================
-    # SCATTER PLOT
-    # =========================
-    st.subheader("Leakage vs Risk")
-    scatter_df["RiskScore"] = scatter_df["RiskScore"].fillna(0)
-
-    # ✅ CREATE REQUIRED COLUMNS (MISSING FIX)
-
-    scatter_df["Leakage_fmt"] = scatter_df["Leakage"].apply(
-        lambda x: "₹ " + format_indian_currency(x)
-    )
+    st.subheader("Risk vs Leakage Heatmap")
     
-    scatter_df["Risk_pct"] = scatter_df["RiskScore"].fillna(0) * 100
-
-    fig3 = px.scatter(
-        scatter_df,
+    heat_df = scatter_df.copy()
+    
+    # binning for better grouping
+    heat_df["Risk_bin"] = pd.cut(heat_df["Risk_pct"], bins=5)
+    heat_df["Leak_bin"] = pd.cut(heat_df["Leakage"], bins=5)
+    
+    heatmap_data = heat_df.groupby(["Risk_bin", "Leak_bin"]).size().reset_index(name="Count")
+    
+    fig_heat = px.density_heatmap(
+        heat_df,
         x="Leakage",
         y="Risk_pct",
-        color="RegionName",
-        hover_name="RegionName"
+        nbinsx=10,
+        nbinsy=10,
+        color_continuous_scale="Reds"
     )
     
-    fig3.update_traces(
-        hovertemplate=
-        "Region: %{hovertext}<br>" +
-        "Leakage: %{customdata[0]}<br>" +
-        "Risk: %{customdata[1]:.2f}%<extra></extra>",
-        customdata=scatter_df[["Leakage_fmt", "Risk_pct"]]
+    fig_heat.update_layout(
+        title="Leakage vs Risk Intensity",
+        xaxis_title="Leakage (₹)",
+        yaxis_title="Risk (%)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#e2e8f0")
     )
     
-    fig3.update_layout(
-        yaxis_title="Risk Score (%)",
-        xaxis_title="Leakage (₹)"
-    )
-
-    st.plotly_chart(fig3, use_container_width=True)
+    st.plotly_chart(fig_heat, use_container_width=True)
 
     st.markdown("---")
     spacer(20)
