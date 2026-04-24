@@ -896,7 +896,7 @@ with tabs[1]:
 
     spacer(20)
 
-   # =========================
+    # =========================
     # 🔴 Leakage vs Risk (Scatter - Clean Final)
     # =========================
     st.subheader("Leakage vs Risk")
