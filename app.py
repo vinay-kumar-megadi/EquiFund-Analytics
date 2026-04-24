@@ -910,7 +910,8 @@ with tabs[1]:
     # -------------------------
     region_fin = filtered_df.groupby("RegionName", as_index=False).agg({
         "AmountAllocated": "sum",
-        "AmountSpent": "sum"
+        "AmountSpent": "sum",
+        "DateAllocated": "max"
     })
     
     region_fin["Leakage"] = region_fin["AmountAllocated"] - region_fin["AmountSpent"]
