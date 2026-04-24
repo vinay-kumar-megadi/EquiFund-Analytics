@@ -1513,7 +1513,7 @@ with tabs[5]:
         filtered_df["RegionName"].unique()
     )
 
-    region_data = df_clean[df_clean["RegionName"] == region_sel]
+    region_data = filtered_df[filtered_df["RegionName"] == region_sel]
     
     total_alloc_r = region_data["AmountAllocated"].sum()
     total_spent_r = region_data["AmountSpent"].sum()
