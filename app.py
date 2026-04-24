@@ -1404,7 +1404,8 @@ with tabs[4]:
         y=util_df["SchemeName"],
         mode='markers',
         name='Utilized',
-        marker=dict(size=10)
+        marker=dict(size=10),
+        hoverinfo="skip"   # ✅ remove white box
     ))
     
     fig_dumbbell.update_layout(
@@ -1415,6 +1416,10 @@ with tabs[4]:
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#e2e8f0")
+    )
+    fig_dumbbell.update_xaxes(
+        tickprefix="₹ ",
+        tickformat=","
     )
     
     st.plotly_chart(fig_dumbbell, use_container_width=True)
