@@ -585,7 +585,10 @@ def kpi_card(title, value):
 # -----------------------------
 df = df_alloc.merge(df_regions, on="RegionID", how="left")
 df = df.merge(df_schemes, on="SchemeID", how="left")
-df = df.merge(df_util, on="AllocationID", how="left")
+df_util_clean = df_util.groupby("AllocationID", as_index=False).agg({
+    "AmountSpent": "sum"
+})
+df = df.merge(df_util_clean, on="AllocationID", how="left")
 
 df_clean = df.drop_duplicates(subset=["AllocationID"])
 
@@ -1309,7 +1312,7 @@ with tabs[4]:
     # =========================
     # PREP DATA
     # =========================
-    scheme_df = df_clean.groupby(
+    scheme_df = filtered_df.groupby(
         "SchemeName", as_index=False
     ).agg({
         "AmountAllocated": "sum",
