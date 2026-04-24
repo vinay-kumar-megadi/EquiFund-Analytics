@@ -1372,6 +1372,13 @@ with tabs[4]:
     st.markdown("###  Scheme Efficiency (Allocated vs Utilized)")
     
     util_df = scheme_df.copy()
+        util_df["Allocated_fmt"] = util_df["AmountAllocated"].apply(
+        lambda x: "₹ " + format_indian_currency(x)
+    )
+    
+    util_df["Spent_fmt"] = util_df["AmountSpent"].apply(
+        lambda x: "₹ " + format_indian_currency(x)
+    )
     
     # sort by gap (important)
     util_df["Gap"] = util_df["AmountAllocated"] - util_df["AmountSpent"]
@@ -1386,6 +1393,7 @@ with tabs[4]:
             y=[util_df["SchemeName"].iloc[i], util_df["SchemeName"].iloc[i]],
             mode='lines',
             line=dict(width=2),
+            hoverinfo="skip",   # ✅ removes "trace 2"
             showlegend=False
         ))
     
@@ -1395,7 +1403,9 @@ with tabs[4]:
         y=util_df["SchemeName"],
         mode='markers',
         name='Allocated',
-        marker=dict(size=10)
+        marker=dict(size=10),
+        customdata=util_df["Allocated_fmt"],
+        hovertemplate="Allocated: %{customdata}<extra></extra>"
     ))
     
     # utilized dots
@@ -1405,7 +1415,8 @@ with tabs[4]:
         mode='markers',
         name='Utilized',
         marker=dict(size=10),
-        hoverinfo="skip"   # ✅ remove white box
+        customdata=util_df["Spent_fmt"],
+        hovertemplate="Utilized: %{customdata}<extra></extra>"
     ))
     
     fig_dumbbell.update_layout(
