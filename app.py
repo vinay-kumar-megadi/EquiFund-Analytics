@@ -952,7 +952,7 @@ with tabs[1]:
     # -------------------------
     scatter_df = region_fin.merge(risk_df, on="RegionName", how="left")
     
-    scatter_df["RiskScore"] = scatter_df["RiskScore"].fillna(0)
+    scatter_df = scatter_df.dropna(subset=["RiskScore"])
     scatter_df["Risk_pct"] = scatter_df["RiskScore"] * 100
     
     # -------------------------
@@ -990,6 +990,8 @@ with tabs[1]:
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#e2e8f0")
     )
+
+    st.dataframe(scatter_df)
     
     st.plotly_chart(fig3, use_container_width=True)
     st.markdown("---")
