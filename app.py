@@ -1371,55 +1371,48 @@ with tabs[4]:
 
 
     # =========================
-    # 🟢 Scheme-wise Utilization (%)
+    # 🟣 Scheme Utilization (Radar Chart)
     # =========================
-    st.markdown("###  Scheme-wise Utilization (%)")
+    st.markdown("###  Scheme Utilization")
     
-    # prepare data
     util_df = scheme_df.copy()
     
-    # calculate utilization %
+    # calculate %
     util_df["UtilRate"] = (
         util_df["AmountSpent"] / util_df["AmountAllocated"]
     ).fillna(0)
     
-    # sort (highest first)
-    util_df = util_df.sort_values("UtilRate", ascending=False)
+    # convert to %
+    util_df["Util_pct"] = util_df["UtilRate"] * 100
     
-    # label (₹ + %)
-    util_df["Util_full"] = util_df.apply(
-        lambda x: f"{x['UtilRate']*100:.2f}% (₹ {format_indian_currency(x['AmountSpent'])})",
-        axis=1
-    )
+    # limit (optional → top 8 for clarity)
+    util_df = util_df.sort_values("Util_pct", ascending=False).head(8)
     
-    # chart
-    fig_util = px.bar(
-        util_df,
-        x="UtilRate",
-        y="SchemeName",
-        orientation="h",
-        color="UtilRate",
-        color_continuous_scale="Greens",
-        title="Scheme Utilization Ranking"
-    )
+    # radar chart
+    fig_radar = go.Figure()
     
-    # hover details
-    fig_util.update_traces(
-        hovertemplate="Scheme: %{y}<br>%{customdata}<extra></extra>",
-        customdata=util_df["Util_full"]
-    )
+    fig_radar.add_trace(go.Scatterpolar(
+        r=util_df["Util_pct"],
+        theta=util_df["SchemeName"],
+        fill='toself',
+        name='Utilization %'
+    ))
     
-    # layout
-    fig_util.update_layout(
+    fig_radar.update_layout(
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+                range=[0, 100]
+            )
+        ),
+        showlegend=False,
         height=500,
-        plot_bgcolor="rgba(0,0,0,0)",
+        title="Scheme Utilization Efficiency (Radar)",
         paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#e2e8f0"),
-        xaxis_title="Utilization Rate",
-        yaxis_title="Scheme"
+        font=dict(color="#e2e8f0")
     )
     
-    st.plotly_chart(fig_util, use_container_width=True)
+    st.plotly_chart(fig_radar, use_container_width=True)
 
     st.markdown("---")
     spacer(20)
