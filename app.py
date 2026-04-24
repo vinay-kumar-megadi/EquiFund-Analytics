@@ -1527,35 +1527,38 @@ with tabs[5]:
     st.markdown("---")
     spacer(20)
 
-    st.markdown("### 📊 Department-wise Allocation")
+    st.markdown("### 📊 Department-wise Allocation Share")
 
     dept_region = region_data.groupby("Department", as_index=False).agg({
         "AmountAllocated": "sum"
     })
-
-    fig_region = px.bar(
-        dept_region,
-        x="Department",
-        y="AmountAllocated",
-        color="Department",
-        title="Department Allocation"
-    )
-
+    
+    # ✅ Indian format
     dept_region["Amount_fmt"] = dept_region["AmountAllocated"].apply(
         lambda x: "₹ " + format_indian_currency(x)
     )
-
+    
+    # ✅ Donut chart
+    fig_region = px.pie(
+        dept_region,
+        names="Department",
+        values="AmountAllocated",
+        hole=0.5
+    )
+    
+    # ✅ Clean hover (no white box issue)
     fig_region.update_traces(
-        hovertemplate="Department: %{x}<br>Amount: %{customdata}<extra></extra>",
+        hovertemplate="Department: %{label}<br>Amount: %{customdata}<extra></extra>",
         customdata=dept_region["Amount_fmt"]
     )
-
+    
     fig_region.update_layout(
+        title="Department Allocation Share",
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#e2e8f0")
     )
-
+    
     st.plotly_chart(fig_region, use_container_width=True)
 
     st.markdown("---")
