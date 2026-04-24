@@ -583,18 +583,15 @@ def kpi_card(title, value):
 # -----------------------------
 # MERGE
 # -----------------------------
-# aggregate utilization first
-df_util_clean = df_util.groupby("AllocationID", as_index=False).agg({
-    "AmountSpent": "sum"
-})
+# -----------------------------
+# MERGE (FIXED)
+# -----------------------------
+df_util_clean = df_util.groupby("AllocationID", as_index=False)["AmountSpent"].sum()
 
-# merge ONLY once and avoid duplication
 df = df_alloc.merge(df_util_clean, on="AllocationID", how="left")
 
-# now merge dimensions
 df = df.merge(df_regions, on="RegionID", how="left")
 df = df.merge(df_schemes, on="SchemeID", how="left")
-df = df.drop_duplicates(subset=["AllocationID"])
 
 st.sidebar.header("Filters")
 
