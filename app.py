@@ -1511,7 +1511,10 @@ with tabs[5]:
         filtered_df["RegionName"].unique()
     )
 
-    region_data = filtered_df[filtered_df["RegionName"] == region_sel]
+    region_data = filtered_df[filtered_df["RegionName"] == region_sel].copy()
+
+    # ✅ REMOVE DUPLICATES (IMPORTANT FIX)
+    region_data = region_data.drop_duplicates(subset=["AllocationID"])
     
     total_alloc_r = region_data["AmountAllocated"].sum()
     total_spent_r = region_data["AmountSpent"].sum()
