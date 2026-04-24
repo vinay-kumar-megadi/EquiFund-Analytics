@@ -388,16 +388,24 @@ def preprocess_data(df_alloc, df_util, df_regions, df_schemes, df_audit):
     df_alloc['AmountAllocated'] = pd.to_numeric(df_alloc['AmountAllocated'], errors='coerce').fillna(0)
     df_util['AmountSpent'] = pd.to_numeric(df_util['AmountSpent'], errors='coerce').fillna(0)
 
-    # 5. Fix: Spent should not exceed allocated
-    df_util = df_util.merge(
+   # 5. Fix utilization correctly (aggregate first, then cap)
+    df_util_clean = df_util.groupby("AllocationID", as_index=False)["AmountSpent"].sum()
+    
+    df_util_clean = df_util_clean.merge(
         df_alloc[['AllocationID', 'AmountAllocated']],
         on='AllocationID',
         how='left'
     )
-    df_util['AmountSpent'] = df_util[['AmountSpent', 'AmountAllocated']].min(axis=1)
-    # ✅ ADD THIS (IMPORTANT)
-    df_util['AmountSpent'] = df_util['AmountSpent'].fillna(0)
-    df_util = df_util.drop(columns=['AmountAllocated'])
+    
+    df_util_clean["AmountSpent"] = df_util_clean.apply(
+        lambda x: min(x["AmountSpent"], x["AmountAllocated"]),
+        axis=1
+    )
+    
+    df_util_clean = df_util_clean.drop(columns=["AmountAllocated"])
+    
+    # replace df_util with cleaned version
+    df_util = df_util_clean
 
     # 6. Date cleaning
     df_alloc['DateAllocated'] = pd.to_datetime(df_alloc['DateAllocated'], errors='coerce')
