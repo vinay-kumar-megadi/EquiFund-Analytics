@@ -1371,40 +1371,50 @@ with tabs[4]:
 
 
     # =========================
-    # 🟢 2. UTILIZATION (FUNNEL)
+    # 🟢 Scheme Utilization (Better Chart)
     # =========================
-    st.markdown("###  Scheme-wise Utilization ")
-
-    scheme_df = scheme_df.sort_values("UtilRate", ascending=False)
-
-    scheme_df["Util_full"] = scheme_df.apply(
-        lambda x: f"{x['UtilRate']*100:.2f}% (₹ {format_indian_currency(x['AmountSpent'])})",
-        axis=1
+    st.markdown("###  Scheme Utilization (Allocated vs Utilized)")
+    
+    util_df = scheme_df.copy()
+    
+    # calculate unspent
+    util_df["Unspent"] = util_df["AmountAllocated"] - util_df["AmountSpent"]
+    
+    # sort (important for readability)
+    util_df = util_df.sort_values("UtilRate", ascending=True)
+    
+    # create chart
+    fig_util_new = go.Figure()
+    
+    # utilized
+    fig_util_new.add_bar(
+        y=util_df["SchemeName"],
+        x=util_df["AmountSpent"],
+        name="Utilized",
+        orientation="h"
     )
-
-    fig_util = px.funnel(
-        scheme_df,
-        x="AmountSpent",
-        y="SchemeName",
-        color="SchemeName",
-        title="Utilization Ranking by Scheme"
+    
+    # unspent
+    fig_util_new.add_bar(
+        y=util_df["SchemeName"],
+        x=util_df["Unspent"],
+        name="Unspent",
+        orientation="h"
     )
-
-    fig_util.update_traces(textinfo="none")
-
-    fig_util.update_traces(
-        hovertemplate="Scheme: %{y}<br>%{customdata}<extra></extra>",
-        customdata=scheme_df["Util_full"]
-    )
-
-    fig_util.update_layout(
+    
+    # layout
+    fig_util_new.update_layout(
+        barmode="stack",
         height=500,
+        title="Utilization Efficiency by Scheme",
+        xaxis_title="Amount (₹)",
+        yaxis_title="Scheme",
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#e2e8f0")
     )
-
-    st.plotly_chart(fig_util, use_container_width=True)
+    
+    st.plotly_chart(fig_util_new, use_container_width=True)
 
     st.markdown("---")
     spacer(20)
