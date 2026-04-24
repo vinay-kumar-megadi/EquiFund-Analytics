@@ -961,8 +961,8 @@ with tabs[1]:
     # =========================
     # TOP & BOTTOM TABLES
     # =========================
-    top = region_fin.sort_values("Leakage", ascending=False).head(5).copy().reset_index(drop=True)
-    bottom = region_fin.sort_values("Leakage").head(5).copy().reset_index(drop=True)
+    top = scatter_df.sort_values("Leakage", ascending=False).head(5).copy().reset_index(drop=True)
+    bottom = scatter_df.sort_values("Leakage").head(5).copy().reset_index(drop=True)
 
     top.index = top.index + 1
     bottom.index = bottom.index + 1
