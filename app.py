@@ -1371,50 +1371,55 @@ with tabs[4]:
 
 
     # =========================
-    # 🟢 Scheme Utilization (Better Chart)
+    # 🟢 Scheme-wise Utilization (%)
     # =========================
-    st.markdown("###  Scheme Utilization (Allocated vs Utilized)")
+    st.markdown("###  Scheme-wise Utilization (%)")
     
+    # prepare data
     util_df = scheme_df.copy()
     
-    # calculate unspent
-    util_df["Unspent"] = util_df["AmountAllocated"] - util_df["AmountSpent"]
+    # calculate utilization %
+    util_df["UtilRate"] = (
+        util_df["AmountSpent"] / util_df["AmountAllocated"]
+    ).fillna(0)
     
-    # sort (important for readability)
-    util_df = util_df.sort_values("UtilRate", ascending=True)
+    # sort (highest first)
+    util_df = util_df.sort_values("UtilRate", ascending=False)
     
-    # create chart
-    fig_util_new = go.Figure()
-    
-    # utilized
-    fig_util_new.add_bar(
-        y=util_df["SchemeName"],
-        x=util_df["AmountSpent"],
-        name="Utilized",
-        orientation="h"
+    # label (₹ + %)
+    util_df["Util_full"] = util_df.apply(
+        lambda x: f"{x['UtilRate']*100:.2f}% (₹ {format_indian_currency(x['AmountSpent'])})",
+        axis=1
     )
     
-    # unspent
-    fig_util_new.add_bar(
-        y=util_df["SchemeName"],
-        x=util_df["Unspent"],
-        name="Unspent",
-        orientation="h"
+    # chart
+    fig_util = px.bar(
+        util_df,
+        x="UtilRate",
+        y="SchemeName",
+        orientation="h",
+        color="UtilRate",
+        color_continuous_scale="Greens",
+        title="Scheme Utilization Ranking"
+    )
+    
+    # hover details
+    fig_util.update_traces(
+        hovertemplate="Scheme: %{y}<br>%{customdata}<extra></extra>",
+        customdata=util_df["Util_full"]
     )
     
     # layout
-    fig_util_new.update_layout(
-        barmode="stack",
+    fig_util.update_layout(
         height=500,
-        title="Utilization Efficiency by Scheme",
-        xaxis_title="Amount (₹)",
-        yaxis_title="Scheme",
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#e2e8f0")
+        font=dict(color="#e2e8f0"),
+        xaxis_title="Utilization Rate",
+        yaxis_title="Scheme"
     )
     
-    st.plotly_chart(fig_util_new, use_container_width=True)
+    st.plotly_chart(fig_util, use_container_width=True)
 
     st.markdown("---")
     spacer(20)
