@@ -909,89 +909,49 @@ with tabs[1]:
 
     spacer(20)
 
-    # =========================
-    # 🔴 Leakage vs Risk (Scatter - Clean Final)
-    # =========================
+    # ✅ SCATTER
     st.subheader("Leakage vs Risk")
-    
-    region_fin = filtered_df.groupby("RegionName", as_index=False).agg({
-        "AmountAllocated": "sum",
-        "AmountSpent": "sum",
-        "DateAllocated": "max"
-    })
-    
-    # calculate leakage AFTER aggregation
-    region_fin["Leakage"] = region_fin["AmountAllocated"] - region_fin["AmountSpent"]
-    
-    # leakage %
-    region_fin["Leakage_pct"] = (
-        region_fin["Leakage"] / region_fin["AmountAllocated"]
-    ).fillna(0) * 100
-    
-    # -------------------------
-    # Risk Score
-    # -------------------------
-    # ✅ FILTER-BASED RISK
 
-    audit_filtered = df_audit.merge(
-        filtered_df[['AllocationID', 'RegionID']],
-        on='AllocationID',
-        how='inner'
+    scatter_df = filtered_df.groupby("RegionName").agg({
+        "AmountAllocated": "sum",
+        "AmountSpent": "sum"
+    }).reset_index()
+
+    scatter_df["Leakage"] = scatter_df["AmountAllocated"] - scatter_df["AmountSpent"]
+
+    # ✅ ADD THIS LINE (IMPORTANT)
+    scatter_df["Leakage_size"] = scatter_df["Leakage"].abs()
+    scatter_df["Leakage_fmt"] = scatter_df["Leakage"].apply(
+    lambda x: "₹ " + format_indian_currency(x)
     )
-    
-    audit_filtered = audit_filtered.merge(
-        df_regions[['RegionID', 'RegionName']],
-        on='RegionID',
-        how='left'
-    )
-    
-    risk_df = audit_filtered.groupby("RegionName")["RiskScore"].mean().reset_index()
-    
-    # -------------------------
-    # Merge
-    # -------------------------
-    scatter_df = region_fin.merge(risk_df, on="RegionName", how="left")
-    
-    scatter_df = scatter_df.dropna(subset=["RiskScore"])
-    scatter_df["Risk_pct"] = scatter_df["RiskScore"] * 100
-    
-    # -------------------------
-    # Format (₹)
-    # -------------------------
-    scatter_df["Leakage_fmt"] = scatter_df["Leakage_pct"].apply(
-        lambda x: f"{x:.2f}%"
-    )
-    
-    # -------------------------
-    # Scatter Plot
-    # -------------------------
+
+    audit_region = df_audit.merge(df_alloc[['AllocationID', 'RegionID']], on='AllocationID')
+    audit_region = audit_region.merge(df_regions[['RegionID', 'RegionName']], on='RegionID')
+
+    risk_region = audit_region.groupby("RegionName")["RiskScore"].mean().reset_index()
+
+    scatter_df = scatter_df.merge(risk_region, on="RegionName", how="left")
+
     fig3 = px.scatter(
         scatter_df,
-        x="Leakage_pct",
-        y="Risk_pct",
+        x="Leakage",
+        y="RiskScore",
+        size="Leakage_size",
         color="RegionName",
-        size="Leakage",
-        hover_name="RegionName"
+        hover_data={
+            "Leakage": False,
+            "Leakage_fmt": True,
+            "RiskScore": True,
+            "RegionName": True
+        }
     )
-    
-    fig3.update_traces(
-        hovertemplate=
-        "Region: %{hovertext}<br>" +
-        "Leakage: %{customdata[0]}<br>" +
-        "Risk: %{y:.2f}%<extra></extra>",
-        customdata=scatter_df[["Leakage_fmt"]]
-    )
-    
+
     fig3.update_layout(
-        height=500,
-        xaxis_title="Leakage (%)",
-        yaxis_title="Risk (%)",
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#e2e8f0")
     )
 
-  
     st.plotly_chart(fig3, use_container_width=True)
     st.markdown("---")
     spacer(20)
