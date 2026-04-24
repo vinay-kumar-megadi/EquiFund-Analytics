@@ -26,7 +26,6 @@ import json
 import requests
 import random
 import os
-import numpy as np
 
 def spacer(h=15):
     st.markdown(f"<div style='margin-top:{h}px'></div>", unsafe_allow_html=True)
@@ -929,20 +928,24 @@ with tabs[1]:
         region_fin["Leakage"] / region_fin["AmountAllocated"]
     ).fillna(0) * 100
     
-    # 🔥 break uniformity (important)
-    region_fin["Leakage_pct"] = region_fin["Leakage_pct"] * (
-        0.85 + (0.3 * np.random.rand(len(region_fin)))
-    )
     # -------------------------
     # Risk Score
     # -------------------------
-    audit_region = df_audit.merge(
-        df_alloc[['AllocationID', 'RegionID']], on='AllocationID'
-    ).merge(
-        df_regions[['RegionID', 'RegionName']], on='RegionID'
+    # ✅ FILTER-BASED RISK
+
+    audit_filtered = df_audit.merge(
+        filtered_df[['AllocationID', 'RegionID']],
+        on='AllocationID',
+        how='inner'
     )
     
-    risk_df = audit_region.groupby("RegionName")["RiskScore"].mean().reset_index()
+    audit_filtered = audit_filtered.merge(
+        df_regions[['RegionID', 'RegionName']],
+        on='RegionID',
+        how='left'
+    )
+    
+    risk_df = audit_filtered.groupby("RegionName")["RiskScore"].mean().reset_index()
     
     # -------------------------
     # Merge
