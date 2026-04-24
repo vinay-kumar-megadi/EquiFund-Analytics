@@ -917,13 +917,18 @@ with tabs[1]:
     # -------------------------
     # Create Region Data
     # -------------------------
+    # =========================
+    # ✅ CORRECT LEAKAGE CALCULATION
+    # =========================
+    
+    # Step 1: Row-level leakage
+    filtered_df["Leakage"] = filtered_df["AmountAllocated"] - filtered_df["AmountSpent"]
+    
+    # Step 2: Aggregate
     region_fin = filtered_df.groupby("RegionName", as_index=False).agg({
-        "AmountAllocated": "sum",
-        "AmountSpent": "sum",
+        "Leakage": "sum",
         "DateAllocated": "max"
     })
-    
-    region_fin["Leakage"] = region_fin["AmountAllocated"] - region_fin["AmountSpent"]
     
     # -------------------------
     # Risk Score
