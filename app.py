@@ -991,8 +991,7 @@ with tabs[1]:
         font=dict(color="#e2e8f0")
     )
 
-    st.dataframe(scatter_df)
-    
+  
     st.plotly_chart(fig3, use_container_width=True)
     st.markdown("---")
     spacer(20)
