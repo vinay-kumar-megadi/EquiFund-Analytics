@@ -937,7 +937,6 @@ with tabs[1]:
         scatter_df,
         x="Leakage",
         y="RiskScore",
-        size="Leakage_size",
         color="RegionName",
         hover_data={
             "Leakage": False,
