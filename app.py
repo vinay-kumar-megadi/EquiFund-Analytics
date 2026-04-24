@@ -388,8 +388,12 @@ def preprocess_data(df_alloc, df_util, df_regions, df_schemes, df_audit):
     df_alloc['AmountAllocated'] = pd.to_numeric(df_alloc['AmountAllocated'], errors='coerce').fillna(0)
     df_util['AmountSpent'] = pd.to_numeric(df_util['AmountSpent'], errors='coerce').fillna(0)
 
-   # 5. Fix utilization correctly (aggregate first, then cap)
-    df_util_clean = df_util.groupby("AllocationID", as_index=False)["AmountSpent"].sum()
+    # 5. Fix utilization correctly (aggregate first, then cap)
+    # Aggregate FIRST (KEEP DateRecorded)
+    df_util_clean = df_util.groupby("AllocationID", as_index=False).agg({
+        "AmountSpent": "sum",
+        "DateRecorded": "max"   # 👈 KEEP DATE
+    })
     
     df_util_clean = df_util_clean.merge(
         df_alloc[['AllocationID', 'AmountAllocated']],
