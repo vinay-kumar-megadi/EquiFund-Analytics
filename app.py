@@ -1372,7 +1372,7 @@ with tabs[4]:
     st.markdown("###  Scheme Efficiency (Allocated vs Utilized)")
     
     util_df = scheme_df.copy()
-        util_df["Allocated_fmt"] = util_df["AmountAllocated"].apply(
+    util_df["Allocated_fmt"] = util_df["AmountAllocated"].apply(
         lambda x: "₹ " + format_indian_currency(x)
     )
     
