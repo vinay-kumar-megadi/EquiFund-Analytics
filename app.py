@@ -1371,48 +1371,57 @@ with tabs[4]:
 
 
     # =========================
-    # 🟣 Scheme Utilization (Radar Chart)
+    # 🔵 Scheme Efficiency (Dumbbell Chart)
     # =========================
-    st.markdown("###  Scheme Utilization")
+    st.markdown("###  Scheme Efficiency (Allocated vs Utilized)")
     
     util_df = scheme_df.copy()
     
-    # calculate %
-    util_df["UtilRate"] = (
-        util_df["AmountSpent"] / util_df["AmountAllocated"]
-    ).fillna(0)
+    # sort by gap (important)
+    util_df["Gap"] = util_df["AmountAllocated"] - util_df["AmountSpent"]
+    util_df = util_df.sort_values("Gap", ascending=False)
     
-    # convert to %
-    util_df["Util_pct"] = util_df["UtilRate"] * 100
+    fig_dumbbell = go.Figure()
     
-    # limit (optional → top 8 for clarity)
-    util_df = util_df.sort_values("Util_pct", ascending=False).head(8)
+    # line (gap)
+    for i in range(len(util_df)):
+        fig_dumbbell.add_trace(go.Scatter(
+            x=[util_df["AmountAllocated"].iloc[i], util_df["AmountSpent"].iloc[i]],
+            y=[util_df["SchemeName"].iloc[i], util_df["SchemeName"].iloc[i]],
+            mode='lines',
+            line=dict(width=2),
+            showlegend=False
+        ))
     
-    # radar chart
-    fig_radar = go.Figure()
-    
-    fig_radar.add_trace(go.Scatterpolar(
-        r=util_df["Util_pct"],
-        theta=util_df["SchemeName"],
-        fill='toself',
-        name='Utilization %'
+    # allocated dots
+    fig_dumbbell.add_trace(go.Scatter(
+        x=util_df["AmountAllocated"],
+        y=util_df["SchemeName"],
+        mode='markers',
+        name='Allocated',
+        marker=dict(size=10)
     ))
     
-    fig_radar.update_layout(
-        polar=dict(
-            radialaxis=dict(
-                visible=True,
-                range=[0, 100]
-            )
-        ),
-        showlegend=False,
+    # utilized dots
+    fig_dumbbell.add_trace(go.Scatter(
+        x=util_df["AmountSpent"],
+        y=util_df["SchemeName"],
+        mode='markers',
+        name='Utilized',
+        marker=dict(size=10)
+    ))
+    
+    fig_dumbbell.update_layout(
         height=500,
-        title="Scheme Utilization Efficiency (Radar)",
+        title="Gap Between Allocated and Utilized Funds",
+        xaxis_title="Amount (₹)",
+        yaxis_title="Scheme",
+        plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#e2e8f0")
     )
     
-    st.plotly_chart(fig_radar, use_container_width=True)
+    st.plotly_chart(fig_dumbbell, use_container_width=True)
 
     st.markdown("---")
     spacer(20)
