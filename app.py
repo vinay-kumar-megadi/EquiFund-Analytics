@@ -924,11 +924,16 @@ with tabs[1]:
     # Step 1: Row-level leakage
     filtered_df["Leakage"] = filtered_df["AmountAllocated"] - filtered_df["AmountSpent"]
     
-    # Step 2: Aggregate
     region_fin = filtered_df.groupby("RegionName", as_index=False).agg({
         "Leakage": "sum",
+        "AmountAllocated": "sum",
         "DateAllocated": "max"
     })
+    
+    # calculate % at region level
+    region_fin["Leakage_pct"] = (
+        region_fin["Leakage"] / region_fin["AmountAllocated"]
+    ).fillna(0) * 100
     
     # -------------------------
     # Risk Score
@@ -952,8 +957,8 @@ with tabs[1]:
     # -------------------------
     # Format (₹)
     # -------------------------
-    scatter_df["Leakage_fmt"] = scatter_df["Leakage"].apply(
-        lambda x: "₹ " + format_indian_currency(x)
+    scatter_df["Leakage_fmt"] = scatter_df["Leakage_pct"].apply(
+        lambda x: f"{x:.2f}%"
     )
     
     # -------------------------
@@ -961,7 +966,7 @@ with tabs[1]:
     # -------------------------
     fig3 = px.scatter(
         scatter_df,
-        x="Leakage",
+        x="Leakage_pct",
         y="Risk_pct",
         color="RegionName",
         size="Leakage",
@@ -978,7 +983,7 @@ with tabs[1]:
     
     fig3.update_layout(
         height=500,
-        xaxis_title="Leakage (₹)",
+        xaxis_title="Leakage (%)",
         yaxis_title="Risk (%)",
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
