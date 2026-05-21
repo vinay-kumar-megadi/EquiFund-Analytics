@@ -1623,9 +1623,11 @@ with tabs[5]:
         dept_util = dept_util.sort_values("UtilizationRate", ascending=False)
     
         # full label
-        dept_util["Util_full"] = dept_util.apply(
-            lambda x: f"{x['UtilizationRate']*100:.2f}% (₹ {format_indian_currency(x['AmountSpent'])})",
-            axis=1
+        dept_util["Util_full"] = (
+            dept_util["UtilizationRate"].mul(100).round(2).astype(str)
+            + "% (₹ "
+            + dept_util["AmountSpent"].apply(format_indian_currency)
+            + ")"
         )
     
         fig_util_adv = px.bar(
